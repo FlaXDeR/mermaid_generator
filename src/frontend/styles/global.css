@@ -1,0 +1,15 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Inter, system-ui, sans-serif;
+    background: #f6f7f9;
+    color: #1f2933;
+}
+
+main {
+    min-height: 100vh;
+    padding: 48px;
+}
