@@ -13,13 +13,20 @@
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--accent);
-    background: var(--accent-dim);
-    border: 1px solid var(--accent);
-    padding: 4px 10px;
+    text-transform: capitalize;
+    color: #ffffff;
+    background: var(--accent);
+    border: none;
+    padding: 4px 14px;
     border-radius: 99px;
     margin-bottom: 20px;
+    box-shadow: 0 0 12px rgba(77, 159, 255, 0.35);
+}
+
+.badge-brand {
+    font-weight: 700;
+    color: #0e1117;
+    letter-spacing: 0.05em;
 }
 
 .hero-title {
@@ -27,6 +34,7 @@
     font-weight: 400;
     color: var(--text-primary);
     margin-bottom: 20px;
+    text-transform: none;
 }
 
 .hero-title em {

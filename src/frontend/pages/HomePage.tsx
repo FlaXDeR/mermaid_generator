@@ -42,13 +42,14 @@ export default function HomePage() {
         <main>
             {/* ── Hero ── */}
             <header className="hero">
-                <span className="hero-badge">✦ AI-Powered</span>
+    <span className="hero-badge">
+        ✦ Powered by <span className="badge-brand">OpenAI</span> & <span className="badge-brand">Mermaid</span>
+    </span>
                 <h1 className="hero-title">
-                    Codice in<br />
-                    <em>Diagrammi.</em>
+                    Code to <em>UML Diagram</em>
                 </h1>
                 <p className="hero-sub">
-                    Incolla del codice o carica un file — trasformiamo il tutto
+                    Incolla del codice o carica un file, verrà generato l'equivalente
                     in diagrammi <strong>Mermaid UML</strong> pronti all'uso.
                 </p>
             </header>
@@ -77,7 +78,7 @@ export default function HomePage() {
                     <div className="panel">
                         <label className="panel-label">
                             Il tuo codice
-                            <span className="panel-hint">qualsiasi linguaggio</span>
+                            <span className="panel-hint">Supporta qualsiasi linguaggio</span>
                         </label>
                         <textarea
                             className="code-input"
