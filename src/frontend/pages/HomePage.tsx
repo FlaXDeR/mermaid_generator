@@ -6,7 +6,8 @@ import OutputSection from './OutputSection';
 type InputMode = 'text' | 'file';
 type Phase = 'input' | 'loading' | 'output';
 
-// Mock più lungo per testare il typewriter adattivo
+const MAX_FILES = 5;
+
 const MOCK_MERMAID = `classDiagram
   class UserService {
     -UserRepository repo
@@ -51,14 +52,49 @@ const MOCK_MERMAID = `classDiagram
   UserService --> EmailService
   UserRepository --> User`;
 
+const MOCK_DOC = `## Panoramica del progetto
+
+Questo modulo implementa un sistema di autenticazione e gestione utenti strutturato in più livelli, seguendo il pattern MVC con separazione delle responsabilità.
+
+## Classi principali
+
+**UserService** — Nucleo della logica applicativa. Gestisce la registrazione, il login e le operazioni sul profilo utente. Dipende da UserRepository per la persistenza e da EmailService per le notifiche.
+
+**UserRepository** — Strato di accesso ai dati. Espone metodi CRUD per l'entità User, astraendo la comunicazione con il database.
+
+**EmailService** — Servizio dedicato all'invio di email transazionali, come il benvenuto post-registrazione e il reset della password.
+
+**AuthController** — Entry point HTTP. Riceve le richieste dall'esterno e le delega a UserService, gestendo il mapping tra route e logica.
+
+## Relazioni e dipendenze
+
+Il controller dipende dal service, il service dipende sia dal repository che dall'email service. Il repository gestisce l'entità User. La dipendenza è unidirezionale e non presenta cicli.
+
+## Pattern rilevati
+
+Dependency Injection implicita tramite costruttore, separazione netta tra controller, service e repository, uso di DTO per isolare il dominio dall'interfaccia HTTP.`;
+
 export default function HomePage() {
     const [phase, setPhase] = useState<Phase>('input');
     const [activeTab, setActiveTab] = useState<InputMode>('text');
     const [codeText, setCodeText] = useState('');
-    const [droppedFile, setDroppedFile] = useState<File | null>(null);
+    const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
     const [isDragging, setIsDragging] = useState(false);
     const [mermaidCode, setMermaidCode] = useState<string | null>(null);
+    const [docText, setDocText] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const addFiles = (incoming: FileList | File[]) => {
+        const arr = Array.from(incoming);
+        setDroppedFiles(prev => {
+            const combined = [...prev, ...arr];
+            // Rimuove duplicati per nome e rispetta il limite
+            const unique = combined.filter(
+                (f, i, self) => self.findIndex(x => x.name === f.name) === i
+            );
+            return unique.slice(0, MAX_FILES);
+        });
+    };
 
     const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
         e.preventDefault();
@@ -70,13 +106,15 @@ export default function HomePage() {
     const handleDrop = (e: DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         setIsDragging(false);
-        const file = e.dataTransfer.files[0];
-        if (file) setDroppedFile(file);
+        addFiles(e.dataTransfer.files);
     };
 
     const handleFileInput = (e: ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) setDroppedFile(file);
+        if (e.target.files) addFiles(e.target.files);
+    };
+
+    const removeFile = (name: string) => {
+        setDroppedFiles(prev => prev.filter(f => f.name !== name));
     };
 
     const handleGenerate = () => {
@@ -84,6 +122,7 @@ export default function HomePage() {
         // TODO: sostituire con chiamata reale al backend
         setTimeout(() => {
             setMermaidCode(MOCK_MERMAID);
+            setDocText(MOCK_DOC);
             setPhase('output');
         }, 4000);
     };
@@ -91,9 +130,14 @@ export default function HomePage() {
     const handleReset = () => {
         setPhase('input');
         setMermaidCode(null);
+        setDocText(null);
         setCodeText('');
-        setDroppedFile(null);
+        setDroppedFiles([]);
     };
+
+    const isGenerateDisabled = activeTab === 'text'
+        ? !codeText.trim()
+        : droppedFiles.length === 0;
 
     return (
         <main>
@@ -105,8 +149,8 @@ export default function HomePage() {
                     Code to <em>UML Diagram</em>
                 </h1>
                 <p className="hero-sub">
-                    Incolla del codice o carica un file, verrà generato l'equivalente
-                    in diagrammi <strong>Mermaid UML</strong> pronti all'uso.
+                    Inserisci il tuo codice o carica fino a 5 file. Verrà generato il codice <strong>Mermaid</strong> e una documentazione automatica della struttura.
+
                 </p>
             </header>
 
@@ -147,54 +191,76 @@ export default function HomePage() {
                     {activeTab === 'file' && (
                         <div className="panel">
                             <label className="panel-label">
-                                Carica un file sorgente
-                                <span className="panel-hint">.ts, .py, .java, .js, .go…</span>
+                                Carica i file sorgente
+                                <span className="panel-hint">
+                                    max {MAX_FILES} file · .ts .py .java .js .go…
+                                </span>
                             </label>
-                            <div
-                                className={`drop-zone ${isDragging ? 'dragging' : ''} ${droppedFile ? 'has-file' : ''}`}
-                                onDragOver={handleDragOver}
-                                onDragLeave={handleDragLeave}
-                                onDrop={handleDrop}
-                                onClick={() => fileInputRef.current?.click()}
-                            >
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept=".ts,.tsx,.js,.jsx,.py,.java,.go,.rs,.cs,.cpp,.c,.rb,.php,.swift,.kt"
-                                    style={{ display: 'none' }}
-                                    onChange={handleFileInput}
-                                />
-                                {droppedFile ? (
-                                    <div className="file-info">
-                                        <span className="file-icon">◈</span>
-                                        <span className="file-name">{droppedFile.name}</span>
-                                        <span className="file-size">
-                                            {(droppedFile.size / 1024).toFixed(1)} KB
-                                        </span>
-                                        <button
-                                            className="file-remove"
-                                            onClick={(e) => { e.stopPropagation(); setDroppedFile(null); }}
-                                        >
-                                            ✕
-                                        </button>
-                                    </div>
-                                ) : (
+
+                            {/* Drop zone — sempre visibile finché non si raggiunge il limite */}
+                            {droppedFiles.length < MAX_FILES && (
+                                <div
+                                    className={`drop-zone ${isDragging ? 'dragging' : ''}`}
+                                    onDragOver={handleDragOver}
+                                    onDragLeave={handleDragLeave}
+                                    onDrop={handleDrop}
+                                    onClick={() => fileInputRef.current?.click()}
+                                >
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        multiple
+                                        accept=".ts,.tsx,.js,.jsx,.py,.java,.go,.rs,.cs,.cpp,.c,.rb,.php,.swift,.kt"
+                                        style={{ display: 'none' }}
+                                        onChange={handleFileInput}
+                                    />
                                     <div className="drop-prompt">
                                         <span className="drop-icon">⤓</span>
                                         <p className="drop-text">
-                                            Trascina qui il file<br />
-                                            <span>oppure clicca per selezionarlo</span>
+                                            Trascina qui i file<br />
+                                            <span>oppure clicca per selezionarli</span>
                                         </p>
+                                        {droppedFiles.length > 0 && (
+                                            <span className="drop-counter">
+                                                {droppedFiles.length}/{MAX_FILES} file caricati
+                                            </span>
+                                        )}
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            )}
+
+                            {/* Lista file caricati */}
+                            {droppedFiles.length > 0 && (
+                                <ul className="file-list">
+                                    {droppedFiles.map(file => (
+                                        <li key={file.name} className="file-list-item">
+                                            <span className="file-icon">◈</span>
+                                            <span className="file-name">{file.name}</span>
+                                            <span className="file-size">
+                                                {(file.size / 1024).toFixed(1)} KB
+                                            </span>
+                                            <button
+                                                className="file-remove"
+                                                onClick={() => removeFile(file.name)}
+                                            >
+                                                ✕
+                                            </button>
+                                        </li>
+                                    ))}
+                                    {droppedFiles.length >= MAX_FILES && (
+                                        <li className="file-list-limit">
+                                            Limite di {MAX_FILES} file raggiunto
+                                        </li>
+                                    )}
+                                </ul>
+                            )}
                         </div>
                     )}
 
                     <button
                         className="generate-btn"
                         onClick={handleGenerate}
-                        disabled={activeTab === 'text' ? !codeText.trim() : !droppedFile}
+                        disabled={isGenerateDisabled}
                     >
                         Genera diagramma Mermaid →
                     </button>
@@ -203,7 +269,9 @@ export default function HomePage() {
 
             {phase === 'loading' && (
                 <div className="loading-container phase-enter">
-                    <div className="loading-spinner" />
+                    <div className="loading-squares">
+                        <span /><span /><span />
+                    </div>
                     <LoadingText />
                 </div>
             )}
@@ -211,6 +279,7 @@ export default function HomePage() {
             {phase === 'output' && mermaidCode && (
                 <OutputSection
                     mermaidCode={mermaidCode}
+                    docText={docText ?? ''}
                     onReset={handleReset}
                 />
             )}
@@ -219,10 +288,10 @@ export default function HomePage() {
 }
 
 const LOADING_PHASES = [
-    "Analizzando il codice...",
-    "Identificando le strutture...",
-    "Costruendo il diagramma...",
-    "Finalizzando l'output...",
+    { symbol: '⬡', text: 'Analizzando il codice' },
+    { symbol: '⬢', text: 'Identificando le strutture' },
+    { symbol: '◈', text: 'Costruendo il diagramma' },
+    { symbol: '✦', text: 'Finalizzando l\'output' },
 ];
 
 function LoadingText() {
@@ -235,5 +304,12 @@ function LoadingText() {
         return () => clearInterval(interval);
     }, []);
 
-    return <p className="loading-phase-text">{LOADING_PHASES[index]}</p>;
+    const { symbol, text } = LOADING_PHASES[index];
+
+    return (
+        <p className="loading-phase-text">
+            <span className="loading-symbol">{symbol}</span>
+            {text}
+        </p>
+    );
 }

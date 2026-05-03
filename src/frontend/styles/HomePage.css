@@ -45,7 +45,7 @@
 .hero-sub {
     font-size: 1.1rem;
     color: var(--text-muted);
-    max-width: 480px;
+    max-width: 640px;
     line-height: 1.7;
 }
 
@@ -163,10 +163,11 @@
     box-shadow: 0 0 0 3px rgba(77, 159, 255, 0.08);
 }
 
+/* ── Drop zone ──────────────────────────────────── */
 .drop-zone {
     border: 2px dashed var(--border);
     border-radius: var(--radius);
-    min-height: 200px;
+    min-height: 140px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -184,17 +185,13 @@
     background: rgba(77, 159, 255, 0.06);
 }
 
-.drop-zone.has-file {
-    border-style: solid;
-    border-color: var(--accent-dim);
-}
-
 .drop-prompt {
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+    padding: 20px;
 }
 
 .drop-icon {
@@ -215,23 +212,41 @@
     opacity: 0.7;
 }
 
-.file-info {
+.drop-counter {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+    opacity: 0.8;
+}
+
+/* ── Lista file caricati ────────────────────────── */
+.file-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.file-list-item {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 0 24px;
-    width: 100%;
+    padding: 10px 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    animation: fadeUp 0.2s ease both;
 }
 
 .file-icon {
-    font-size: 1.4rem;
+    font-size: 1.1rem;
     color: var(--accent);
     flex-shrink: 0;
 }
 
 .file-name {
     font-family: var(--font-mono);
-    font-size: 14px;
+    font-size: 13px;
     color: var(--text-primary);
     flex: 1;
     overflow: hidden;
@@ -251,10 +266,10 @@
     border: 1px solid var(--border);
     color: var(--text-muted);
     border-radius: 50%;
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     cursor: pointer;
-    font-size: 10px;
+    font-size: 9px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -267,6 +282,16 @@
     border-color: #ff6b6b;
 }
 
+.file-list-limit {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+    opacity: 0.6;
+    padding: 6px 16px;
+    text-align: center;
+}
+
+/* ── Bottone genera ─────────────────────────────── */
 .generate-btn {
     margin-top: 20px;
     align-self: flex-end;
@@ -298,28 +323,42 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 32px;
+    gap: 36px;
     min-height: 340px;
 }
 
-/* Spinner rotante */
-.loading-spinner {
-    width: 48px;
-    height: 48px;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.9s linear infinite;
+.loading-squares {
+    display: flex;
+    gap: 10px;
 }
 
-/* Testo loading — grande, chiaro, font display */
+.loading-squares span {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    background: var(--accent);
+    animation: squarePulse 1.2s ease-in-out infinite;
+}
+
+.loading-squares span:nth-child(2) { animation-delay: 0.2s; }
+.loading-squares span:nth-child(3) { animation-delay: 0.4s; }
+
 .loading-phase-text {
-    font-family: var(--font-display);
-    font-size: 1.6rem;
-    color: var(--text-primary);
-    letter-spacing: 0.01em;
+    font-family: var(--font-body);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 10px;
     animation: fadeSwap 1.4s ease infinite;
     text-align: center;
+}
+
+.loading-symbol {
+    font-size: 1.3rem;
+    color: var(--accent);
+    opacity: 0.8;
 }
 
 /* ── Animazioni ─────────────────────────────────── */
@@ -328,8 +367,9 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
+@keyframes squarePulse {
+    0%, 100% { opacity: 0.2; transform: scaleY(0.6); }
+    50%       { opacity: 1;   transform: scaleY(1); }
 }
 
 @keyframes fadeSwap {
@@ -337,7 +377,6 @@
     90%, 100% { opacity: 0; }
 }
 
-/* ── Responsive ─────────────────────────────────── */
 @media (max-width: 640px) {
     main { padding: 40px 20px 80px; }
     .hero-title { font-size: 2.8rem; }

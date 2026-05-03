@@ -5,15 +5,21 @@
 .output-section {
     display: flex;
     flex-direction: column;
-    gap: 32px;
+    gap: 28px;
+    max-width: var(--cards-max-width);
+    margin-left: auto;
+    margin-right: auto;
 }
 
-/* ── Griglia due colonne ────────────────────────── */
+/* ── Griglia tre colonne ────────────────────────── */
 .output-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 28px;
+    /* laterali fissi, centrale significativamente più larga */
+    grid-template-columns: 408px 1.8fr 408px;
+    gap: 20px;
     align-items: start;
+    /* niente overflow — la griglia si adatta al contenitore */
+    width: 100%;
 }
 
 /* ── Card condivisa ─────────────────────────────── */
@@ -27,17 +33,45 @@
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
 }
 
+/* ── Card codice — bordo e tema VIOLA ───────────── */
+.code-card {
+    border-color: #4a3fa0;
+}
+
+.code-card .card-header {
+    background: #1a1640;
+    border-bottom-color: #4a3fa0;
+}
+
+.code-card .card-title {
+    background: #7c6fff;
+}
+
+.code-card .card-btn {
+    color: #7c6fff;
+    border-color: #7c6fff;
+}
+
+.code-card .card-btn:hover {
+    background: #2a2260;
+}
+
+.code-card .card-btn.success {
+    color: #7c6fff;
+    border-color: #7c6fff;
+}
+
 /* ── Header card ────────────────────────────────── */
 .card-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 24px;
+    padding: 14px 20px;
     border-bottom: 1px solid var(--border);
     background: var(--bg);
+    flex-shrink: 0;
 }
 
-/* Badge titolo blu — card codice, senza glow */
 .card-title {
     display: inline-block;
     font-family: var(--font-mono);
@@ -51,9 +85,9 @@
     border-radius: 8px;
 }
 
-/* ── Card destra — diagramma UML, tema viola/indaco ── */
+/* ── Card diagramma — bordo e tema AZZURRO ──────── */
 .diagram-card {
-    border-color: #4a3fa0;
+    border-color: var(--accent);
     opacity: 0;
     transform: translateY(10px);
     transition: opacity 0.5s ease, transform 0.5s ease;
@@ -67,21 +101,98 @@
 }
 
 .diagram-card .card-header {
-    background: #1a1640;
-    border-bottom-color: #4a3fa0;
+    background: #0d1e35;
+    border-bottom-color: var(--accent);
 }
 
-/* Badge titolo viola — card diagramma, senza glow */
 .diagram-card .card-title {
-    background: #7c6fff;
+    background: var(--accent);
 }
 
-/* ── Bottone Copia — outline blu ─────────────────── */
+.card-btn.download {
+    color: var(--accent);
+    background: transparent;
+    border: 1px solid var(--accent);
+}
+
+.card-btn.download:hover {
+    background: var(--accent-dim);
+    color: var(--accent);
+}
+
+/* ── Selettore tipo diagramma ───────────────────── */
+.diagram-selector {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--accent);
+    background: #091525;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.selector-label {
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    opacity: 0.8;
+}
+
+.selector-buttons {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.selector-btn {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--accent-dim);
+    background: transparent;
+    color: var(--text-code);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.selector-btn:hover {
+    background: var(--accent-dim);
+    color: #ffffff;
+}
+
+.selector-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0e1117;
+    font-weight: 600;
+}
+
+.selector-description {
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: var(--text-code);
+    opacity: 0.75;
+    line-height: 1.5;
+    min-height: 32px;
+}
+
+/* ── Bottoni header ─────────────────────────────── */
+.card-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .card-btn {
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 500;
-    padding: 5px 14px;
+    padding: 4px 12px;
     border-radius: 8px;
     border: 1px solid var(--accent);
     background: transparent;
@@ -99,80 +210,136 @@
     color: var(--accent);
 }
 
-/* ── Bottone Scarica PDF — outline viola ─────────── */
-.card-btn.download {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 500;
+.card-btn.skip-btn {
     color: #7c6fff;
-    background: transparent;
-    border: 1px solid #7c6fff;
-    box-shadow: none;
+    border-color: #7c6fff;
+    animation: skipPulse 1.5s ease-in-out infinite;
 }
 
-.card-btn.download:hover {
+.card-btn.skip-btn:hover {
     background: #2a2260;
-    opacity: 1;
-    color: #7c6fff;
 }
 
-/* ── Colonna codice ─────────────────────────────── */
+/* ── Colonna codice — altezza fissa con scroll ───── */
 .code-block {
     margin: 0;
-    padding: 24px;
+    padding: 20px;
     font-family: var(--font-mono);
-    font-size: 13px;
+    font-size: 12.5px;
     line-height: 1.75;
     color: var(--text-code);
     white-space: pre-wrap;
     word-break: break-word;
-    min-height: 420px;
+    height: 576px;
+    max-height: 576px;
     overflow-y: auto;
-}
-
-/* Card cliccabile durante typewriter */
-.output-card.skippable {
-    cursor: pointer;
-}
-
-/* Hint "clicca per saltare" */
-.skip-hint {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--accent);
-    opacity: 0.5;
-    padding: 0 24px 8px;
-    text-align: right;
 }
 
 .cursor {
     display: inline-block;
-    color: var(--accent);
+    color: #7c6fff;
     animation: blink 0.8s step-end infinite;
     margin-left: 1px;
 }
 
-/* ── Area diagramma ─────────────────────────────── */
+/* ── Area diagramma — stessa altezza totale delle laterali ── */
+/* 576px (body) = 576px diagram-area, il selettore è extra sopra */
 .diagram-area {
-    padding: 24px;
-    min-height: 420px;
+    padding: 20px;
+    height: 430px;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
 }
 
 .diagram-placeholder {
     font-family: var(--font-mono);
-    font-size: 13px;
+    font-size: 12px;
     color: var(--text-muted);
     opacity: 0.4;
 }
 
-/* ── Footer con bottone reset ───────────────────── */
+/* ── Card documentazione — bordo verde ──────────── */
+.doc-card {
+    border-color: #1e5c4a;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.5s 0.2s ease, transform 0.5s 0.2s ease;
+    pointer-events: none;
+}
+
+.doc-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.doc-card .card-header {
+    background: #0f2420;
+    border-bottom-color: #1e5c4a;
+}
+
+.doc-title {
+    background: #2a9d7a;
+}
+
+.card-btn.doc-copy-btn {
+    color: #2a9d7a;
+    border-color: #2a9d7a;
+}
+
+.card-btn.doc-copy-btn:hover {
+    background: #0f2420;
+}
+
+.card-btn.doc-success {
+    color: #2a9d7a;
+    border-color: #2a9d7a;
+}
+
+.card-btn.download-doc {
+    color: #2a9d7a;
+    background: transparent;
+    border: 1px solid #2a9d7a;
+}
+
+.card-btn.download-doc:hover {
+    background: #0f2420;
+    color: #2a9d7a;
+}
+
+.doc-body {
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    height: 576px;
+    max-height: 576px;
+    overflow-y: auto;
+}
+
+.doc-paragraph {
+    font-family: var(--font-body);
+    font-size: 13px;
+    line-height: 1.75;
+    color: var(--text-primary);
+}
+
+.doc-paragraph:first-child {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* ── Footer ─────────────────────────────────────── */
 .output-footer {
     display: flex;
     justify-content: flex-start;
     padding-top: 4px;
+    max-width: 860px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
 }
 
 .reset-btn {
@@ -198,4 +365,9 @@
 @keyframes blink {
     0%, 100% { opacity: 1; }
     50%       { opacity: 0; }
+}
+
+@keyframes skipPulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.55; }
 }
