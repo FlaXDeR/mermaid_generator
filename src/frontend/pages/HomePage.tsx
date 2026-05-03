@@ -5,8 +5,32 @@ import OutputSection from './OutputSection';
 
 type InputMode = 'text' | 'file';
 type Phase = 'input' | 'loading' | 'output';
+export type DiagramType = 'class' | 'sequence' | 'flowchart' | 'component';
 
 const MAX_FILES = 5;
+
+const DIAGRAM_TYPES: { id: DiagramType; label: string; description: string }[] = [
+    {
+        id: 'class',
+        label: 'Class',
+        description: 'Struttura delle classi, attributi e relazioni. Ideale per codice OOP.',
+    },
+    {
+        id: 'sequence',
+        label: 'Sequence',
+        description: 'Flusso di chiamate tra oggetti nel tempo. Utile per capire il runtime.',
+    },
+    {
+        id: 'flowchart',
+        label: 'Flowchart',
+        description: 'Logica con condizioni e cicli. Più leggibile per chi non conosce UML.',
+    },
+    {
+        id: 'component',
+        label: 'Component',
+        description: 'Architettura ad alto livello con moduli e dipendenze.',
+    },
+];
 
 const MOCK_MERMAID = `classDiagram
   class UserService {
@@ -82,13 +106,13 @@ export default function HomePage() {
     const [isDragging, setIsDragging] = useState(false);
     const [mermaidCode, setMermaidCode] = useState<string | null>(null);
     const [docText, setDocText] = useState<string | null>(null);
+    const [selectedDiagram, setSelectedDiagram] = useState<DiagramType>('class');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const addFiles = (incoming: FileList | File[]) => {
         const arr = Array.from(incoming);
         setDroppedFiles(prev => {
             const combined = [...prev, ...arr];
-            // Rimuove duplicati per nome e rispetta il limite
             const unique = combined.filter(
                 (f, i, self) => self.findIndex(x => x.name === f.name) === i
             );
@@ -139,6 +163,8 @@ export default function HomePage() {
         ? !codeText.trim()
         : droppedFiles.length === 0;
 
+    const selectedType = DIAGRAM_TYPES.find(d => d.id === selectedDiagram)!;
+
     return (
         <main>
             <header className="hero">
@@ -150,7 +176,6 @@ export default function HomePage() {
                 </h1>
                 <p className="hero-sub">
                     Inserisci il tuo codice o carica fino a 5 file. Verrà generato il codice <strong>Mermaid</strong> e una documentazione automatica della struttura.
-
                 </p>
             </header>
 
@@ -171,91 +196,112 @@ export default function HomePage() {
                         </button>
                     </div>
 
-                    {activeTab === 'text' && (
-                        <div className="panel">
-                            <label className="panel-label">
-                                Il tuo codice
-                                <span className="panel-hint">Supporta qualsiasi linguaggio</span>
-                            </label>
-                            <textarea
-                                className="code-input"
-                                placeholder={`// Incolla qui il tuo codice\nfunction example() {\n  return 42;\n}`}
-                                value={codeText}
-                                onChange={(e) => setCodeText(e.target.value)}
-                                rows={14}
-                                spellCheck={false}
-                            />
-                        </div>
-                    )}
+                    <div className="panel">
+                        {activeTab === 'text' && (
+                            <>
+                                <label className="panel-label">
+                                    Il tuo codice
+                                    <span className="panel-hint">Supporta qualsiasi linguaggio</span>
+                                </label>
+                                <textarea
+                                    className="code-input"
+                                    placeholder={`// Incolla qui il tuo codice\nfunction example() {\n  return 42;\n}`}
+                                    value={codeText}
+                                    onChange={(e) => setCodeText(e.target.value)}
+                                    rows={10}
+                                    spellCheck={false}
+                                />
+                            </>
+                        )}
 
-                    {activeTab === 'file' && (
-                        <div className="panel">
-                            <label className="panel-label">
-                                Carica i file sorgente
-                                <span className="panel-hint">
-                                    max {MAX_FILES} file · .ts .py .java .js .go…
-                                </span>
-                            </label>
+                        {activeTab === 'file' && (
+                            <>
+                                <label className="panel-label">
+                                    Carica i file sorgente
+                                    <span className="panel-hint">
+                                        max {MAX_FILES} file · .ts .py .java .js .go…
+                                    </span>
+                                </label>
 
-                            {/* Drop zone — sempre visibile finché non si raggiunge il limite */}
-                            {droppedFiles.length < MAX_FILES && (
-                                <div
-                                    className={`drop-zone ${isDragging ? 'dragging' : ''}`}
-                                    onDragOver={handleDragOver}
-                                    onDragLeave={handleDragLeave}
-                                    onDrop={handleDrop}
-                                    onClick={() => fileInputRef.current?.click()}
-                                >
-                                    <input
-                                        ref={fileInputRef}
-                                        type="file"
-                                        multiple
-                                        accept=".ts,.tsx,.js,.jsx,.py,.java,.go,.rs,.cs,.cpp,.c,.rb,.php,.swift,.kt"
-                                        style={{ display: 'none' }}
-                                        onChange={handleFileInput}
-                                    />
-                                    <div className="drop-prompt">
-                                        <span className="drop-icon">⤓</span>
-                                        <p className="drop-text">
-                                            Trascina qui i file<br />
-                                            <span>oppure clicca per selezionarli</span>
-                                        </p>
-                                        {droppedFiles.length > 0 && (
-                                            <span className="drop-counter">
-                                                {droppedFiles.length}/{MAX_FILES} file caricati
-                                            </span>
-                                        )}
+                                {droppedFiles.length < MAX_FILES && (
+                                    <div
+                                        className={`drop-zone ${isDragging ? 'dragging' : ''}`}
+                                        onDragOver={handleDragOver}
+                                        onDragLeave={handleDragLeave}
+                                        onDrop={handleDrop}
+                                        onClick={() => fileInputRef.current?.click()}
+                                    >
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            multiple
+                                            accept=".ts,.tsx,.js,.jsx,.py,.java,.go,.rs,.cs,.cpp,.c,.rb,.php,.swift,.kt"
+                                            style={{ display: 'none' }}
+                                            onChange={handleFileInput}
+                                        />
+                                        <div className="drop-prompt">
+                                            <span className="drop-icon">⤓</span>
+                                            <p className="drop-text">
+                                                Trascina qui i file<br />
+                                                <span>oppure clicca per selezionarli</span>
+                                            </p>
+                                            {droppedFiles.length > 0 && (
+                                                <span className="drop-counter">
+                                                    {droppedFiles.length}/{MAX_FILES} file caricati
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            )}
+                                )}
 
-                            {/* Lista file caricati */}
-                            {droppedFiles.length > 0 && (
-                                <ul className="file-list">
-                                    {droppedFiles.map(file => (
-                                        <li key={file.name} className="file-list-item">
-                                            <span className="file-icon">◈</span>
-                                            <span className="file-name">{file.name}</span>
-                                            <span className="file-size">
-                                                {(file.size / 1024).toFixed(1)} KB
-                                            </span>
-                                            <button
-                                                className="file-remove"
-                                                onClick={() => removeFile(file.name)}
-                                            >
-                                                ✕
-                                            </button>
-                                        </li>
-                                    ))}
-                                    {droppedFiles.length >= MAX_FILES && (
-                                        <li className="file-list-limit">
-                                            Limite di {MAX_FILES} file raggiunto
-                                        </li>
-                                    )}
-                                </ul>
-                            )}
+                                {droppedFiles.length > 0 && (
+                                    <ul className="file-list">
+                                        {droppedFiles.map(file => (
+                                            <li key={file.name} className="file-list-item">
+                                                <span className="file-icon">◈</span>
+                                                <span className="file-name">{file.name}</span>
+                                                <span className="file-size">
+                                                    {(file.size / 1024).toFixed(1)} KB
+                                                </span>
+                                                <button
+                                                    className="file-remove"
+                                                    onClick={() => removeFile(file.name)}
+                                                >
+                                                    ✕
+                                                </button>
+                                            </li>
+                                        ))}
+                                        {droppedFiles.length >= MAX_FILES && (
+                                            <li className="file-list-limit">
+                                                Limite di {MAX_FILES} file raggiunto
+                                            </li>
+                                        )}
+                                    </ul>
+                                )}
+                            </>
+                        )}
+
+                        {/* Selettore tipo diagramma — sempre visibile nel pannello */}
+                        <div className="diagram-type-selector">
+                            <label className="panel-label">
+                                Tipo di diagramma
+                            </label>
+                            <div className="diagram-type-buttons">
+                                {DIAGRAM_TYPES.map(type => (
+                                    <button
+                                        key={type.id}
+                                        className={`diagram-type-btn ${selectedDiagram === type.id ? 'active' : ''}`}
+                                        onClick={() => setSelectedDiagram(type.id)}
+                                    >
+                                        {type.label}
+                                    </button>
+                                ))}
+                            </div>
+                            <p className="diagram-type-description">
+                                {selectedType.description}
+                            </p>
                         </div>
-                    )}
+                    </div>
 
                     <button
                         className="generate-btn"
@@ -280,6 +326,7 @@ export default function HomePage() {
                 <OutputSection
                     mermaidCode={mermaidCode}
                     docText={docText ?? ''}
+                    diagramType={selectedDiagram}
                     onReset={handleReset}
                 />
             )}

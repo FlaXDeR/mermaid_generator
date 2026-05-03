@@ -72,6 +72,25 @@
     flex-shrink: 0;
 }
 
+/* Header con titolo + badge affiancati */
+.card-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Badge tipo diagramma generato */
+.diagram-type-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 3px 10px;
+    border-radius: 8px;
+    opacity: 0.8;
+}
+
 .card-title {
     display: inline-block;
     font-family: var(--font-mono);
@@ -246,7 +265,7 @@
 /* 576px (body) = 576px diagram-area, il selettore è extra sopra */
 .diagram-area {
     padding: 20px;
-    height: 430px;
+    height: 576px;
     display: flex;
     align-items: center;
     justify-content: center;

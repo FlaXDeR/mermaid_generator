@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import "../styles/OutputSection.css";
+import type { DiagramType } from './HomePage';
 
 function getTypewriterSpeed(length: number): number {
     if (length < 200) return 30;
@@ -7,41 +8,25 @@ function getTypewriterSpeed(length: number): number {
     return 4;
 }
 
-const DIAGRAM_TYPES = [
-    {
-        id: 'class',
-        label: 'Class',
-        description: 'Struttura delle classi, attributi e relazioni — ideale per codice orientato agli oggetti.',
-    },
-    {
-        id: 'sequence',
-        label: 'Sequence',
-        description: 'Flusso di chiamate tra oggetti nel tempo — utile per capire il comportamento a runtime.',
-    },
-    {
-        id: 'flowchart',
-        label: 'Flowchart',
-        description: 'Logica del codice con condizioni e cicli — più leggibile per chi non conosce UML.',
-    },
-    {
-        id: 'component',
-        label: 'Component',
-        description: 'Architettura ad alto livello con moduli e dipendenze — panoramica del sistema.',
-    },
-];
+const DIAGRAM_LABELS: Record<DiagramType, string> = {
+    class:     'Class Diagram',
+    sequence:  'Sequence Diagram',
+    flowchart: 'Flowchart',
+    component: 'Component Diagram',
+};
 
 interface OutputSectionProps {
     mermaidCode: string;
     docText: string;
+    diagramType: DiagramType;
     onReset: () => void;
 }
 
-export default function OutputSection({ mermaidCode, docText, onReset }: OutputSectionProps) {
+export default function OutputSection({ mermaidCode, docText, diagramType, onReset }: OutputSectionProps) {
     const [displayedCode, setDisplayedCode] = useState<string>('');
     const [typewriterDone, setTypewriterDone] = useState(false);
     const [copied, setCopied] = useState(false);
     const [docCopied, setDocCopied] = useState(false);
-    const [selectedDiagram, setSelectedDiagram] = useState('class');
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const cancelledRef = useRef(false);
 
@@ -105,12 +90,9 @@ export default function OutputSection({ mermaidCode, docText, onReset }: OutputS
         console.log('Download PDF documento');
     };
 
-    const selectedType = DIAGRAM_TYPES.find(d => d.id === selectedDiagram)!;
-
     return (
         <section className="output-section phase-enter">
 
-            {/* ── Griglia tre colonne affiancate ── */}
             <div className="output-grid">
 
                 {/* Sinistra — codice Mermaid */}
@@ -140,28 +122,17 @@ export default function OutputSection({ mermaidCode, docText, onReset }: OutputS
                 {/* Centro — diagramma UML */}
                 <div className={`output-card diagram-card ${typewriterDone ? 'visible' : ''}`}>
                     <div className="card-header">
-                        <span className="card-title">Diagramma UML</span>
+                        <div className="card-header-left">
+                            <span className="card-title">Diagramma UML</span>
+                            {/* Badge tipo diagramma generato */}
+                            <span className="diagram-type-badge">
+                                {DIAGRAM_LABELS[diagramType]}
+                            </span>
+                        </div>
                         <button className="card-btn download" onClick={handleDownloadPDF}>
                             ↓ Scarica PDF
                         </button>
                     </div>
-
-                    <div className="diagram-selector">
-                        <p className="selector-label">Seleziona il tipo di diagramma</p>
-                        <div className="selector-buttons">
-                            {DIAGRAM_TYPES.map(type => (
-                                <button
-                                    key={type.id}
-                                    className={`selector-btn ${selectedDiagram === type.id ? 'active' : ''}`}
-                                    onClick={() => setSelectedDiagram(type.id)}
-                                >
-                                    {type.label}
-                                </button>
-                            ))}
-                        </div>
-                        <p className="selector-description">{selectedType.description}</p>
-                    </div>
-
                     <div className="diagram-area">
                         <p className="diagram-placeholder">Il diagramma apparirà qui</p>
                     </div>
