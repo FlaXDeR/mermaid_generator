@@ -1,0 +1,201 @@
+/* ════════════════════════════════════════════════
+   OutputSection.css
+   ════════════════════════════════════════════════ */
+
+.output-section {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+/* ── Griglia due colonne ────────────────────────── */
+.output-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    align-items: start;
+}
+
+/* ── Card condivisa ─────────────────────────────── */
+.output-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* ── Header card ────────────────────────────────── */
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+}
+
+/* Badge titolo blu — card codice, senza glow */
+.card-title {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #ffffff;
+    background: var(--accent);
+    padding: 5px 12px;
+    border-radius: 8px;
+}
+
+/* ── Card destra — diagramma UML, tema viola/indaco ── */
+.diagram-card {
+    border-color: #4a3fa0;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    pointer-events: none;
+}
+
+.diagram-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.diagram-card .card-header {
+    background: #1a1640;
+    border-bottom-color: #4a3fa0;
+}
+
+/* Badge titolo viola — card diagramma, senza glow */
+.diagram-card .card-title {
+    background: #7c6fff;
+}
+
+/* ── Bottone Copia — outline blu ─────────────────── */
+.card-btn {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    cursor: pointer;
+    transition: background 0.2s, opacity 0.2s;
+}
+
+.card-btn:hover {
+    background: var(--accent-dim);
+}
+
+.card-btn.success {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* ── Bottone Scarica PDF — outline viola ─────────── */
+.card-btn.download {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: #7c6fff;
+    background: transparent;
+    border: 1px solid #7c6fff;
+    box-shadow: none;
+}
+
+.card-btn.download:hover {
+    background: #2a2260;
+    opacity: 1;
+    color: #7c6fff;
+}
+
+/* ── Colonna codice ─────────────────────────────── */
+.code-block {
+    margin: 0;
+    padding: 24px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.75;
+    color: var(--text-code);
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 420px;
+    overflow-y: auto;
+}
+
+/* Card cliccabile durante typewriter */
+.output-card.skippable {
+    cursor: pointer;
+}
+
+/* Hint "clicca per saltare" */
+.skip-hint {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+    opacity: 0.5;
+    padding: 0 24px 8px;
+    text-align: right;
+}
+
+.cursor {
+    display: inline-block;
+    color: var(--accent);
+    animation: blink 0.8s step-end infinite;
+    margin-left: 1px;
+}
+
+/* ── Area diagramma ─────────────────────────────── */
+.diagram-area {
+    padding: 24px;
+    min-height: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.diagram-placeholder {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-muted);
+    opacity: 0.4;
+}
+
+/* ── Footer con bottone reset ───────────────────── */
+.output-footer {
+    display: flex;
+    justify-content: flex-start;
+    padding-top: 4px;
+}
+
+.reset-btn {
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    color: #0e1117;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    cursor: pointer;
+    box-shadow: 0 0 14px rgba(77, 159, 255, 0.3);
+    transition: opacity 0.2s, transform 0.15s;
+}
+
+.reset-btn:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+}
+
+/* ── Animazioni ─────────────────────────────────── */
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+}

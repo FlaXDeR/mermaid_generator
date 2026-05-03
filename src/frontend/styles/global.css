@@ -19,6 +19,8 @@
     --text-primary:#e8ecf0;
     --text-muted:  #6b7a90;
     --text-code:   #a8c8f0;
+    --accent-secondary:     #7c6fff;
+    --accent-secondary-dim: #2a2260;
 
     /* type */
     --font-display: 'DM Serif Display', Georgia, serif;
