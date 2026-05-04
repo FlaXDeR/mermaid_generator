@@ -9,29 +9,34 @@ export type DiagramType = 'class' | 'sequence' | 'flowchart' | 'component';
 
 const MAX_FILES = 5;
 
-const DIAGRAM_TYPES: { id: DiagramType; label: string; description: string }[] = [
+const DIAGRAM_TYPES: { id: DiagramType; label: string; icon: string; description: string }[] = [
     {
         id: 'class',
         label: 'Class',
-        description: 'Struttura delle classi, attributi e relazioni. Ideale per codice OOP.',
+        icon: '◫',
+        description: 'Mostra la struttura statica del codice — classi, attributi, metodi e relazioni tra di essi. Il più comune per codice orientato agli oggetti.',
     },
     {
         id: 'sequence',
         label: 'Sequence',
-        description: 'Flusso di chiamate tra oggetti nel tempo. Utile per capire il runtime.',
+        icon: '⇄',
+        description: 'Rappresenta il flusso dinamico delle chiamate tra oggetti nel tempo. Utile per capire come i componenti interagiscono durante l\'esecuzione.',
     },
     {
         id: 'flowchart',
         label: 'Flowchart',
-        description: 'Logica con condizioni e cicli. Più leggibile per chi non conosce UML.',
+        icon: '⬡',
+        description: 'Visualizza la logica del codice attraverso condizioni, cicli e diramazioni. Più leggibile per chi non conosce UML.',
     },
     {
         id: 'component',
         label: 'Component',
-        description: 'Architettura ad alto livello con moduli e dipendenze.',
+        icon: '⬢',
+        description: 'Visione ad alto livello dell\'architettura con moduli e dipendenze. Ideale per progetti strutturati in layer o microservizi.',
     },
 ];
 
+// Mock per sviluppo — da rimuovere quando il backend è pronto
 const MOCK_MERMAID = `classDiagram
   class UserService {
     -UserRepository repo
@@ -107,12 +112,14 @@ export default function HomePage() {
     const [mermaidCode, setMermaidCode] = useState<string | null>(null);
     const [docText, setDocText] = useState<string | null>(null);
     const [selectedDiagram, setSelectedDiagram] = useState<DiagramType>('class');
+    const [descKey, setDescKey] = useState(0);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const addFiles = (incoming: FileList | File[]) => {
         const arr = Array.from(incoming);
         setDroppedFiles(prev => {
             const combined = [...prev, ...arr];
+            // rimuove duplicati per nome
             const unique = combined.filter(
                 (f, i, self) => self.findIndex(x => x.name === f.name) === i
             );
@@ -141,9 +148,14 @@ export default function HomePage() {
         setDroppedFiles(prev => prev.filter(f => f.name !== name));
     };
 
+    const handleSelectDiagram = (type: DiagramType) => {
+        setSelectedDiagram(type);
+        setDescKey(k => k + 1); // incrementa la key per riattivare il fade
+    };
+
     const handleGenerate = () => {
         setPhase('loading');
-        // TODO: sostituire con chiamata reale al backend
+        // TODO: sostituire con chiamata al backend
         setTimeout(() => {
             setMermaidCode(MOCK_MERMAID);
             setDocText(MOCK_DOC);
@@ -159,10 +171,7 @@ export default function HomePage() {
         setDroppedFiles([]);
     };
 
-    const isGenerateDisabled = activeTab === 'text'
-        ? !codeText.trim()
-        : droppedFiles.length === 0;
-
+    const isGenerateDisabled = activeTab === 'text' ? !codeText.trim() : droppedFiles.length === 0;
     const selectedType = DIAGRAM_TYPES.find(d => d.id === selectedDiagram)!;
 
     return (
@@ -218,9 +227,7 @@ export default function HomePage() {
                             <>
                                 <label className="panel-label">
                                     Carica i file sorgente
-                                    <span className="panel-hint">
-                                        max {MAX_FILES} file · .ts .py .java .js .go…
-                                    </span>
+                                    <span className="panel-hint">max {MAX_FILES} file · .ts .py .java .js .go…</span>
                                 </label>
 
                                 {droppedFiles.length < MAX_FILES && (
@@ -281,7 +288,6 @@ export default function HomePage() {
                             </>
                         )}
 
-                        {/* Selettore tipo diagramma — sempre visibile nel pannello */}
                         <div className="diagram-type-selector">
                             <label className="panel-label">
                                 Tipo di diagramma
@@ -291,13 +297,14 @@ export default function HomePage() {
                                     <button
                                         key={type.id}
                                         className={`diagram-type-btn ${selectedDiagram === type.id ? 'active' : ''}`}
-                                        onClick={() => setSelectedDiagram(type.id)}
+                                        onClick={() => handleSelectDiagram(type.id)}
                                     >
+                                        <span className="diagram-type-icon">{type.icon}</span>
                                         {type.label}
                                     </button>
                                 ))}
                             </div>
-                            <p className="diagram-type-description">
+                            <p key={descKey} className="diagram-type-description">
                                 {selectedType.description}
                             </p>
                         </div>
@@ -308,7 +315,7 @@ export default function HomePage() {
                         onClick={handleGenerate}
                         disabled={isGenerateDisabled}
                     >
-                        Genera diagramma Mermaid →
+                        Genera {selectedType.label} Diagram →
                     </button>
                 </section>
             )}
@@ -338,7 +345,7 @@ const LOADING_PHASES = [
     { symbol: '⬡', text: 'Analizzando il codice' },
     { symbol: '⬢', text: 'Identificando le strutture' },
     { symbol: '◈', text: 'Costruendo il diagramma' },
-    { symbol: '✦', text: 'Finalizzando l\'output' },
+    { symbol: '✦', text: "Finalizzando l'output" },
 ];
 
 function LoadingText() {

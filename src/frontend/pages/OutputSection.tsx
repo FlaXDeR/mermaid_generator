@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import "../styles/OutputSection.css";
 import type { DiagramType } from './HomePage';
 
+// velocità typewriter adattiva in base alla lunghezza del codice
 function getTypewriterSpeed(length: number): number {
     if (length < 200) return 30;
     if (length < 800) return 12;
@@ -82,6 +83,7 @@ export default function OutputSection({ mermaidCode, docText, diagramType, onRes
         });
     };
 
+    // TODO: implementare export PDF con jsPDF + html2canvas
     const handleDownloadPDF = () => {
         console.log('Download PDF diagramma');
     };
@@ -92,10 +94,9 @@ export default function OutputSection({ mermaidCode, docText, diagramType, onRes
 
     return (
         <section className="output-section phase-enter">
-
             <div className="output-grid">
 
-                {/* Sinistra — codice Mermaid */}
+                {/* codice Mermaid generato */}
                 <div className="output-card code-card">
                     <div className="card-header">
                         <span className="card-title">Codice Mermaid</span>
@@ -119,12 +120,11 @@ export default function OutputSection({ mermaidCode, docText, diagramType, onRes
                     </pre>
                 </div>
 
-                {/* Centro — diagramma UML */}
+                {/* diagramma renderizzato — visibile dopo il typewriter */}
                 <div className={`output-card diagram-card ${typewriterDone ? 'visible' : ''}`}>
                     <div className="card-header">
                         <div className="card-header-left">
                             <span className="card-title">Diagramma UML</span>
-                            {/* Badge tipo diagramma generato */}
                             <span className="diagram-type-badge">
                                 {DIAGRAM_LABELS[diagramType]}
                             </span>
@@ -134,11 +134,12 @@ export default function OutputSection({ mermaidCode, docText, diagramType, onRes
                         </button>
                     </div>
                     <div className="diagram-area">
+                        {/* TODO: rendere il diagramma con mermaid.js */}
                         <p className="diagram-placeholder">Il diagramma apparirà qui</p>
                     </div>
                 </div>
 
-                {/* Destra — documentazione */}
+                {/* documentazione generata dall'LLM */}
                 <div className={`output-card doc-card ${typewriterDone ? 'visible' : ''}`}>
                     <div className="card-header">
                         <span className="card-title doc-title">Documentazione</span>
@@ -168,7 +169,6 @@ export default function OutputSection({ mermaidCode, docText, diagramType, onRes
                     ← Genera un altro diagramma
                 </button>
             </div>
-
         </section>
     );
 }

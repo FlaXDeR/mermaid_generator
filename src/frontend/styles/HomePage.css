@@ -1,8 +1,5 @@
-/* ════════════════════════════════════════════════
-   HomePage.css
-   ════════════════════════════════════════════════ */
+/* HomePage.css */
 
-/* ── Hero ───────────────────────────────────────── */
 .hero {
     margin-bottom: 56px;
     animation: fadeUp 0.6s ease both;
@@ -13,10 +10,8 @@
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.12em;
-    text-transform: none;
     color: #ffffff;
     background: var(--accent);
-    border: none;
     padding: 4px 14px;
     border-radius: 99px;
     margin-bottom: 20px;
@@ -34,7 +29,6 @@
     font-weight: 400;
     color: var(--text-primary);
     margin-bottom: 20px;
-    text-transform: none;
 }
 
 .hero-title em {
@@ -54,12 +48,10 @@
     font-weight: 600;
 }
 
-/* ── Transizione tra fasi ───────────────────────── */
 .phase-enter {
     animation: fadeUp 0.45s ease both;
 }
 
-/* ── Input section ──────────────────────────────── */
 .input-section {
     display: flex;
     flex-direction: column;
@@ -163,7 +155,6 @@
     box-shadow: 0 0 0 3px rgba(77, 159, 255, 0.08);
 }
 
-/* ── Drop zone ──────────────────────────────────── */
 .drop-zone {
     border: 2px dashed var(--border);
     border-radius: var(--radius);
@@ -219,7 +210,6 @@
     opacity: 0.8;
 }
 
-/* ── Lista file caricati ────────────────────────── */
 .file-list {
     list-style: none;
     display: flex;
@@ -291,7 +281,6 @@
     text-align: center;
 }
 
-/* ── Bottone genera ─────────────────────────────── */
 .generate-btn {
     margin-top: 20px;
     align-self: flex-end;
@@ -317,7 +306,7 @@
     cursor: not-allowed;
 }
 
-/* ── Loading ────────────────────────────────────── */
+/* loading */
 .loading-container {
     display: flex;
     flex-direction: column;
@@ -352,45 +341,27 @@
     align-items: center;
     gap: 10px;
     animation: fadeSwap 1.4s ease infinite;
-    text-align: center;
 }
 
 .loading-symbol {
     font-size: 1.3rem;
-    color: var(--accent);
     opacity: 0.8;
 }
 
-/* ── Animazioni ─────────────────────────────────── */
-@keyframes fadeUp {
-    from { opacity: 0; transform: translateY(18px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes squarePulse {
-    0%, 100% { opacity: 0.2; transform: scaleY(0.6); }
-    50%       { opacity: 1;   transform: scaleY(1); }
-}
-
-@keyframes fadeSwap {
-    0%, 75%   { opacity: 1; }
-    90%, 100% { opacity: 0; }
-}
-
-@media (max-width: 640px) {
-    main { padding: 40px 20px 80px; }
-    .hero-title { font-size: 2.8rem; }
-    .generate-btn { width: 100%; text-align: center; }
-}
-
-/* Selettore tipo diagramma nel pannello input */
+/* selettore tipo diagramma */
 .diagram-type-selector {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding-top: 16px;
+    gap: 12px;
+    padding-top: 20px;
     border-top: 1px solid var(--border);
     margin-top: 4px;
+}
+
+.diagram-type-selector .panel-label {
+    font-size: 14px;
+    color: var(--text-primary);
+    letter-spacing: 0.06em;
 }
 
 .diagram-type-buttons {
@@ -402,7 +373,7 @@
     font-family: var(--font-mono);
     font-size: 12px;
     font-weight: 500;
-    padding: 6px 16px;
+    padding: 7px 18px;
     border-radius: 8px;
     border: 1px solid var(--border);
     background: transparent;
@@ -423,10 +394,43 @@
     font-weight: 600;
 }
 
+.diagram-type-icon {
+    font-size: 13px;
+    margin-right: 4px;
+    opacity: 0.8;
+}
+
 .diagram-type-description {
     font-family: var(--font-body);
-    font-size: 12px;
+    font-size: 13px;
     color: var(--text-muted);
-    line-height: 1.5;
-    min-height: 20px;
+    line-height: 1.65;
+    min-height: 42px;
+    animation: fadeDescription 0.3s ease both;
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes squarePulse {
+    0%, 100% { opacity: 0.2; transform: scaleY(0.6); }
+    50%       { opacity: 1;   transform: scaleY(1); }
+}
+
+@keyframes fadeSwap {
+    0%, 75%   { opacity: 1; }
+    90%, 100% { opacity: 0; }
+}
+
+@keyframes fadeDescription {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 640px) {
+    main { padding: 40px 20px 80px; }
+    .hero-title { font-size: 2.8rem; }
+    .generate-btn { width: 100%; text-align: center; }
 }

@@ -1,6 +1,4 @@
-/* ════════════════════════════════════════════════
-   OutputSection.css
-   ════════════════════════════════════════════════ */
+/* OutputSection.css */
 
 .output-section {
     display: flex;
@@ -11,18 +9,14 @@
     margin-right: auto;
 }
 
-/* ── Griglia tre colonne ────────────────────────── */
 .output-grid {
     display: grid;
-    /* laterali fissi, centrale significativamente più larga */
     grid-template-columns: 408px 1.8fr 408px;
     gap: 20px;
     align-items: start;
-    /* niente overflow — la griglia si adatta al contenitore */
     width: 100%;
 }
 
-/* ── Card condivisa ─────────────────────────────── */
 .output-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -33,7 +27,7 @@
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
 }
 
-/* ── Card codice — bordo e tema VIOLA ───────────── */
+/* card codice — viola */
 .code-card {
     border-color: #4a3fa0;
 }
@@ -61,7 +55,6 @@
     border-color: #7c6fff;
 }
 
-/* ── Header card ────────────────────────────────── */
 .card-header {
     display: flex;
     align-items: center;
@@ -72,23 +65,10 @@
     flex-shrink: 0;
 }
 
-/* Header con titolo + badge affiancati */
 .card-header-left {
     display: flex;
     align-items: center;
     gap: 10px;
-}
-
-/* Badge tipo diagramma generato */
-.diagram-type-badge {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 500;
-    color: var(--accent);
-    border: 1px solid var(--accent);
-    padding: 3px 10px;
-    border-radius: 8px;
-    opacity: 0.8;
 }
 
 .card-title {
@@ -104,7 +84,18 @@
     border-radius: 8px;
 }
 
-/* ── Card diagramma — bordo e tema AZZURRO ──────── */
+.diagram-type-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 3px 10px;
+    border-radius: 8px;
+    opacity: 0.8;
+}
+
+/* card diagramma — azzurro */
 .diagram-card {
     border-color: var(--accent);
     opacity: 0;
@@ -128,79 +119,6 @@
     background: var(--accent);
 }
 
-.card-btn.download {
-    color: var(--accent);
-    background: transparent;
-    border: 1px solid var(--accent);
-}
-
-.card-btn.download:hover {
-    background: var(--accent-dim);
-    color: var(--accent);
-}
-
-/* ── Selettore tipo diagramma ───────────────────── */
-.diagram-selector {
-    padding: 14px 20px;
-    border-bottom: 1px solid var(--accent);
-    background: #091525;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    flex-shrink: 0;
-}
-
-.selector-label {
-    font-family: var(--font-body);
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--accent);
-    opacity: 0.8;
-}
-
-.selector-buttons {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-}
-
-.selector-btn {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
-    padding: 4px 10px;
-    border-radius: 8px;
-    border: 1px solid var(--accent-dim);
-    background: transparent;
-    color: var(--text-code);
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s, border-color 0.2s;
-}
-
-.selector-btn:hover {
-    background: var(--accent-dim);
-    color: #ffffff;
-}
-
-.selector-btn.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #0e1117;
-    font-weight: 600;
-}
-
-.selector-description {
-    font-family: var(--font-body);
-    font-size: 11px;
-    color: var(--text-code);
-    opacity: 0.75;
-    line-height: 1.5;
-    min-height: 32px;
-}
-
-/* ── Bottoni header ─────────────────────────────── */
 .card-actions {
     display: flex;
     align-items: center;
@@ -229,6 +147,16 @@
     color: var(--accent);
 }
 
+.card-btn.download {
+    color: var(--accent);
+    background: transparent;
+    border: 1px solid var(--accent);
+}
+
+.card-btn.download:hover {
+    background: var(--accent-dim);
+}
+
 .card-btn.skip-btn {
     color: #7c6fff;
     border-color: #7c6fff;
@@ -239,7 +167,6 @@
     background: #2a2260;
 }
 
-/* ── Colonna codice — altezza fissa con scroll ───── */
 .code-block {
     margin: 0;
     padding: 20px;
@@ -261,11 +188,10 @@
     margin-left: 1px;
 }
 
-/* ── Area diagramma — stessa altezza totale delle laterali ── */
-/* 576px (body) = 576px diagram-area, il selettore è extra sopra */
 .diagram-area {
     padding: 20px;
     height: 576px;
+    max-height: 576px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -279,7 +205,7 @@
     opacity: 0.4;
 }
 
-/* ── Card documentazione — bordo verde ──────────── */
+/* card documentazione — verde */
 .doc-card {
     border-color: #1e5c4a;
     opacity: 0;
@@ -325,7 +251,6 @@
 
 .card-btn.download-doc:hover {
     background: #0f2420;
-    color: #2a9d7a;
 }
 
 .doc-body {
@@ -350,7 +275,6 @@
     font-weight: 600;
 }
 
-/* ── Footer ─────────────────────────────────────── */
 .output-footer {
     display: flex;
     justify-content: flex-start;
@@ -380,7 +304,6 @@
     transform: translateY(-1px);
 }
 
-/* ── Animazioni ─────────────────────────────────── */
 @keyframes blink {
     0%, 100% { opacity: 1; }
     50%       { opacity: 0; }
