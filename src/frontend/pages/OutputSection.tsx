@@ -202,18 +202,38 @@ export default function OutputSection({ mermaidCode, docText, diagramType, onRes
     };
 
     // export PDF diagramma
+    // export PDF diagramma con tema mermaid.live (dark)
     const handleDownloadDiagramPDF = async () => {
-        if (!diagramSvg) return;
+        if (!mermaidCode) return;
 
-        const container = document.createElement('div');
-        container.style.cssText = 'position:fixed;left:-9999px;top:0;background:#ffffff;padding:48px;';
-        container.innerHTML = diagramSvg;
-        document.body.appendChild(container);
+        let container: HTMLDivElement | null = null;
 
         try {
+            // 1. switcha al tema dark (mermaid.live)
+            mermaid.initialize({
+                startOnLoad: false,
+                theme: 'dark',
+                fontFamily: 'monospace',
+            });
+
+            // 2. ri-renderizza con il nuovo tema
+            const { svg: darkSvg } = await mermaid.render(`pdf-${Date.now()}`, mermaidCode);
+
+            // 3. crea container con sfondo stile mermaid.live
+            container = document.createElement('div');
+            container.style.cssText = [
+                'position:fixed;left:-9999px;top:0;',
+                'padding:60px;',
+                'background:#ffffff;',
+                'display:inline-block;',
+            ].join('');
+            container.innerHTML = darkSvg;
+            document.body.appendChild(container);
+
             const canvas = await html2canvas(container, {
                 backgroundColor: '#ffffff',
                 scale: 5,
+                useCORS: true,
             });
 
             const pdf = new jsPDF({
@@ -232,10 +252,30 @@ export default function OutputSection({ mermaidCode, docText, diagramType, onRes
             let imgH = imgW / ratio;
             if (imgH > maxH) { imgH = maxH; imgW = imgH * ratio; }
 
+            // sfondo intera pagina A4 uguale al container
             pdf.addImage(canvas.toDataURL('image/png'), 'PNG', (pageW - imgW) / 2, (pageH - imgH) / 2, imgW, imgH);
             pdf.save('Diagram.pdf');
+
         } finally {
-            document.body.removeChild(container);
+            // 4. ripristina sempre il tema originale dell'app
+            mermaid.initialize({
+                startOnLoad: false,
+                theme: 'base',
+                darkMode: true,
+                fontFamily: 'monospace',
+                themeVariables: {
+                    background: 'transparent',
+                    primaryColor: '#1a1640',
+                    primaryTextColor: '#e8ecf0',
+                    primaryBorderColor: '#4a3fa0',
+                    lineColor: '#6b7a90',
+                    secondaryColor: '#0d1e35',
+                    tertiaryColor: '#161b25',
+                }
+            });
+            if (container && document.body.contains(container)) {
+                document.body.removeChild(container);
+            }
         }
     };
 
