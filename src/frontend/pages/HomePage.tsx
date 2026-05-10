@@ -8,6 +8,7 @@ type Phase = 'input' | 'loading' | 'output';
 export type DiagramType = 'class' | 'sequence' | 'flowchart' | 'component';
 
 const MAX_FILES = 5;
+const API_URL = 'http://localhost:3000/api/generate';
 
 const DIAGRAM_TYPES: { id: DiagramType; label: string; icon: string; description: string }[] = [
     {
@@ -36,72 +37,14 @@ const DIAGRAM_TYPES: { id: DiagramType; label: string; icon: string; description
     },
 ];
 
-// Mock per sviluppo — da rimuovere quando il backend è pronto
-const MOCK_MERMAID = `classDiagram
-  class UserService {
-    -UserRepository repo
-    -EmailService emailService
-    +register(dto: RegisterDTO) User
-    +login(email: string, password: string) Token
-    +updateProfile(id: string, dto: UpdateDTO) User
-    +deleteAccount(id: string) void
-  }
-
-  class UserRepository {
-    -Database db
-    +findById(id: string) User
-    +findByEmail(email: string) User
-    +save(user: User) User
-    +delete(id: string) void
-  }
-
-  class EmailService {
-    -SmtpClient client
-    +sendWelcome(email: string) void
-    +sendPasswordReset(email: string, token: string) void
-  }
-
-  class User {
-    +id: string
-    +email: string
-    +passwordHash: string
-    +createdAt: Date
-    +isActive: boolean
-  }
-
-  class AuthController {
-    -UserService userService
-    +POST /register(req, res) void
-    +POST /login(req, res) void
-    +DELETE /account(req, res) void
-  }
-
-  AuthController --> UserService
-  UserService --> UserRepository
-  UserService --> EmailService
-  UserRepository --> User`;
-
-const MOCK_DOC = `## Panoramica del progetto
-
-Questo modulo implementa un sistema di autenticazione e gestione utenti strutturato in più livelli, seguendo il pattern MVC con separazione delle responsabilità.
-
-## Classi principali
-
-**UserService** — Nucleo della logica applicativa. Gestisce la registrazione, il login e le operazioni sul profilo utente. Dipende da UserRepository per la persistenza e da EmailService per le notifiche.
-
-**UserRepository** — Strato di accesso ai dati. Espone metodi CRUD per l'entità User, astraendo la comunicazione con il database.
-
-**EmailService** — Servizio dedicato all'invio di email transazionali, come il benvenuto post-registrazione e il reset della password.
-
-**AuthController** — Entry point HTTP. Riceve le richieste dall'esterno e le delega a UserService, gestendo il mapping tra route e logica.
-
-## Relazioni e dipendenze
-
-Il controller dipende dal service, il service dipende sia dal repository che dall'email service. Il repository gestisce l'entità User. La dipendenza è unidirezionale e non presenta cicli.
-
-## Pattern rilevati
-
-Dependency Injection implicita tramite costruttore, separazione netta tra controller, service e repository, uso di DTO per isolare il dominio dall'interfaccia HTTP.`;
+function readFileContent(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error(`Errore lettura file: ${file.name}`));
+        reader.readAsText(file);
+    });
+}
 
 export default function HomePage() {
     const [phase, setPhase] = useState<Phase>('input');
@@ -113,13 +56,13 @@ export default function HomePage() {
     const [docText, setDocText] = useState<string | null>(null);
     const [selectedDiagram, setSelectedDiagram] = useState<DiagramType>('class');
     const [descKey, setDescKey] = useState(0);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const addFiles = (incoming: FileList | File[]) => {
         const arr = Array.from(incoming);
         setDroppedFiles(prev => {
             const combined = [...prev, ...arr];
-            // rimuove duplicati per nome
             const unique = combined.filter(
                 (f, i, self) => self.findIndex(x => x.name === f.name) === i
             );
@@ -150,17 +93,49 @@ export default function HomePage() {
 
     const handleSelectDiagram = (type: DiagramType) => {
         setSelectedDiagram(type);
-        setDescKey(k => k + 1); // incrementa la key per riattivare il fade
+        setDescKey(k => k + 1);
     };
 
-    const handleGenerate = () => {
+    const handleGenerate = async () => {
         setPhase('loading');
-        // TODO: sostituire con chiamata al backend
-        setTimeout(() => {
-            setMermaidCode(MOCK_MERMAID);
-            setDocText(MOCK_DOC);
+        setErrorMsg(null);
+
+        try {
+            let body: Record<string, unknown>;
+
+            if (activeTab === 'text') {
+                body = { code: codeText, diagramType: selectedDiagram };
+            } else {
+                const filesContent = await Promise.all(
+                    droppedFiles.map(async f => ({
+                        name: f.name,
+                        content: await readFileContent(f),
+                    }))
+                );
+                body = { files: filesContent, diagramType: selectedDiagram };
+            }
+
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error ?? 'Errore dal server');
+            }
+
+            const data = await response.json();
+            setMermaidCode(data.mermaid);
+            setDocText(data.doc);
             setPhase('output');
-        }, 4000);
+
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Errore sconosciuto';
+            setErrorMsg(message);
+            setPhase('input');
+        }
     };
 
     const handleReset = () => {
@@ -169,6 +144,7 @@ export default function HomePage() {
         setDocText(null);
         setCodeText('');
         setDroppedFiles([]);
+        setErrorMsg(null);
     };
 
     const isGenerateDisabled = activeTab === 'text' ? !codeText.trim() : droppedFiles.length === 0;
@@ -308,6 +284,10 @@ export default function HomePage() {
                                 {selectedType.description}
                             </p>
                         </div>
+
+                        {errorMsg && (
+                            <p className="error-msg">⚠ {errorMsg}</p>
+                        )}
                     </div>
 
                     <button
