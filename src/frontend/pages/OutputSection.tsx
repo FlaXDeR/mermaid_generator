@@ -6,8 +6,6 @@ import html2canvas from 'html2canvas';
 import "../styles/OutputSection.css";
 import type { DiagramType } from './HomePage';
 
-// usa monospace di sistema come font principale per garantire che Mermaid
-// possa misurare correttamente il testo durante il layout del diagramma
 mermaid.initialize({
     startOnLoad: false,
     theme: 'base',
@@ -30,6 +28,28 @@ function getTypewriterSpeed(length: number): number {
     return 4;
 }
 
+// calcola lo zoom ottimale per far entrare il diagramma nel contenitore
+function calcAutoZoom(svgString: string, containerW: number, containerH: number): number {
+    const mwMatch = svgString.match(/max-width:\s*([\d.]+)px/);
+    const svgW = mwMatch ? parseFloat(mwMatch[1]) : null;
+
+    if (svgW && svgW > 0) {
+        const vbMatch = svgString.match(/viewBox="[\d.\s-]+ ([\d.]+) ([\d.]+)"/);
+        const svgH = vbMatch
+            ? svgW * (parseFloat(vbMatch[2]) / parseFloat(vbMatch[1]))
+            : svgW;
+
+        const pad = 32;
+        const fitZoom = Math.min(
+            (containerW - pad) / svgW,
+            (containerH - pad) / svgH
+        );
+        // parte almeno a 1.8x anche se il diagramma è grande
+        return Math.max(2, Math.min(fitZoom * 2.75, 6));
+    }
+
+    return 2.25;
+}
 const DIAGRAM_LABELS: Record<DiagramType, string> = {
     class:     'Class Diagram',
     sequence:  'Sequence Diagram',
@@ -37,10 +57,9 @@ const DIAGRAM_LABELS: Record<DiagramType, string> = {
     component: 'Component Diagram',
 };
 
-const ZOOM_STEP = 0.375;
-const ZOOM_MIN = 1.25;
+const ZOOM_STEP = 0.4;
+const ZOOM_MIN = 1;
 const ZOOM_MAX = 6;
-const ZOOM_DEFAULT = 2.5;
 
 interface OutputSectionProps {
     mermaidCode: string;
@@ -56,10 +75,11 @@ export default function OutputSection({ mermaidCode, docText, diagramType, onRes
     const [docCopied, setDocCopied] = useState(false);
     const [diagramSvg, setDiagramSvg] = useState<string>('');
     const [diagramError, setDiagramError] = useState<string>('');
-    const [zoom, setZoom] = useState(ZOOM_DEFAULT);
+    const [zoom, setZoom] = useState(1);
     const [isHoveringDiagram, setIsHoveringDiagram] = useState(false);
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const cancelledRef = useRef(false);
+    const diagramAreaRef = useRef<HTMLDivElement>(null);
 
     // nasconde il toast di errore di Mermaid
     useEffect(() => {
@@ -94,7 +114,7 @@ export default function OutputSection({ mermaidCode, docText, diagramType, onRes
         setTypewriterDone(false);
         setDiagramSvg('');
         setDiagramError('');
-        setZoom(ZOOM_DEFAULT);
+        setZoom(1);
         timerRef.current = setTimeout(tick, speed);
 
         return () => {
@@ -103,8 +123,7 @@ export default function OutputSection({ mermaidCode, docText, diagramType, onRes
         };
     }, [mermaidCode]);
 
-    // rendering Mermaid
-    // rendering Mermaid
+    // rendering Mermaid con zoom automatico basato sulle dimensioni reali del SVG
     useEffect(() => {
         if (!typewriterDone || !mermaidCode) return;
 
@@ -116,12 +135,18 @@ export default function OutputSection({ mermaidCode, docText, diagramType, onRes
             }
 
             try {
-                // aspetta font e un piccolo delay per garantire che Mermaid sia pronto
                 await document.fonts.ready;
                 await new Promise(resolve => setTimeout(resolve, 100));
                 const id = `mermaid-${Date.now()}`;
                 const { svg } = await mermaid.render(id, mermaidCode);
+
+                // calcola zoom automatico in base alle dimensioni del contenitore e del SVG
+                const containerW = diagramAreaRef.current?.clientWidth ?? 600;
+                const containerH = diagramAreaRef.current?.clientHeight ?? 536;
+                const autoZoom = calcAutoZoom(svg, containerW, containerH);
+
                 setDiagramSvg(svg);
+                setZoom(autoZoom);
                 setDiagramError('');
             } catch {
                 setDiagramError('Impossibile renderizzare il diagramma.');
@@ -326,9 +351,12 @@ export default function OutputSection({ mermaidCode, docText, diagramType, onRes
                                 <button className="zoom-btn" onClick={handleZoomOut} title="Zoom out">−</button>
                             </div>
                         )}
-                        <div className="diagram-area">
+                        <div className="diagram-area" ref={diagramAreaRef}>
                             {diagramSvg ? (
-                                <div className="diagram-scroll-inner" style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}>
+                                <div
+                                    className="diagram-scroll-inner"
+                                    style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}
+                                >
                                     <div
                                         className="diagram-svg"
                                         dangerouslySetInnerHTML={{ __html: diagramSvg }}
