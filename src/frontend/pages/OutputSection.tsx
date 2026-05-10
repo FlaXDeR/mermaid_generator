@@ -232,10 +232,21 @@ export default function OutputSection({ mermaidCode, docText, diagramType, onRes
             // 1. switcha al tema dark (mermaid.live)
             mermaid.initialize({
                 startOnLoad: false,
-                theme: 'dark',
+                theme: 'base',
                 fontFamily: 'monospace',
+                themeVariables: {
+                    primaryColor: '#1a1640',
+                    primaryTextColor: '#e8ecf0',
+                    primaryBorderColor: '#4a3fa0',
+                    lineColor: '#555555',
+                    actorLineColor: '#555555',
+                    signalColor: '#555555',
+                    signalTextColor: '#333333',
+                    labelTextColor: '#333333',
+                    secondaryColor: '#0d1e35',
+                    tertiaryColor: '#161b25',
+                }
             });
-
             // 2. ri-renderizza con il nuovo tema
             const { svg: darkSvg } = await mermaid.render(`pdf-${Date.now()}`, mermaidCode);
 
