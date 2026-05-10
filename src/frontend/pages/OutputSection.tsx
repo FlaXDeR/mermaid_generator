@@ -81,6 +81,9 @@ export default function OutputSection({ mermaidCode, docText, diagramType, onRes
     const cancelledRef = useRef(false);
     const diagramAreaRef = useRef<HTMLDivElement>(null);
 
+    // true se il backend ha restituito un errore strutturato
+    const isError = mermaidCode.trim().startsWith('// ERR_');
+
     // nasconde il toast di errore di Mermaid
     useEffect(() => {
         const observer = new MutationObserver(() => {
@@ -370,7 +373,7 @@ export default function OutputSection({ mermaidCode, docText, diagramType, onRes
                             >
                                 {copied ? '✓ Copiato' : '⎘ Copia'}
                             </button>
-                            {typewriterDone && (
+                            {typewriterDone && !isError && (
                                 <button className="card-btn" onClick={handleDownloadMmd}>
                                     ↓ Scarica .mmd
                                 </button>
@@ -396,9 +399,11 @@ export default function OutputSection({ mermaidCode, docText, diagramType, onRes
                                 {DIAGRAM_LABELS[diagramType]}
                             </span>
                         </div>
-                        <button className="card-btn download" onClick={handleDownloadDiagramPDF}>
-                            ↓ Scarica PDF
-                        </button>
+                        {!isError && (
+                            <button className="card-btn download" onClick={handleDownloadDiagramPDF}>
+                                ↓ Scarica PDF
+                            </button>
+                        )}
                     </div>
 
                     <div className="diagram-wrapper">
@@ -435,15 +440,19 @@ export default function OutputSection({ mermaidCode, docText, diagramType, onRes
                     <div className="card-header">
                         <span className="card-title doc-title">Documentazione</span>
                         <div className="card-actions">
-                            <button
-                                className={`card-btn doc-copy-btn ${docCopied ? 'doc-success' : ''}`}
-                                onClick={handleDocCopy}
-                            >
-                                {docCopied ? '✓ Copiato' : '⎘ Copia'}
-                            </button>
-                            <button className="card-btn download-doc" onClick={handleDownloadDocPDF}>
-                                ↓ Scarica PDF
-                            </button>
+                            {!isError && (
+                                <>
+                                    <button
+                                        className={`card-btn doc-copy-btn ${docCopied ? 'doc-success' : ''}`}
+                                        onClick={handleDocCopy}
+                                    >
+                                        {docCopied ? '✓ Copiato' : '⎘ Copia'}
+                                    </button>
+                                    <button className="card-btn download-doc" onClick={handleDownloadDocPDF}>
+                                        ↓ Scarica PDF
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
                     <div className="doc-body">

@@ -69,7 +69,7 @@ sequenceDiagram
   C-->>B: risultato
   B-->>A: risposta
 REGOLE OBBLIGATORIE:
-- Massimo 6 partecipanti
+- MASSIMO 6 partecipanti: se ce ne sono di più, aggrega quelli meno importanti
 - Usa ->> per chiamate e -->> per risposte/return
 - Mostra solo le interazioni principali
 - I messaggi devono riflettere i nomi reali dei metodi`,
@@ -85,7 +85,8 @@ REGOLE OBBLIGATORIE:
 - Usa ([...]) per inizio/fine, [...] per operazioni, {...} per decisioni
 - Etichette brevi in italiano, senza virgolette doppie nei label dei nodi
 - Le frecce condizionali devono avere etichette |Sì| e |No|
-- NON usare virgolette doppie dentro i nodi`,
+- NON usare virgolette doppie dentro i nodi
+- Ogni label nei nodi deve essere massimo 25 caratteri: tronca o semplifica se necessario`,
 
     component: `Usa la sintassi graph TD con nodi componente. Esempio:
 graph TD
@@ -191,7 +192,7 @@ Regole:
         ],
         temperature: 0.2,
         max_tokens: 5000,
-    });
+    }, { timeout: 30000 });
 
     const raw = response.choices[0]?.message?.content ?? '';
 
