@@ -64,7 +64,7 @@ export default function OutputSection({ mermaidCode, docText, diagramType, onRes
     // nasconde il toast di errore di Mermaid
     useEffect(() => {
         const observer = new MutationObserver(() => {
-            const toast = document.querySelector('#d2, .error-icon, [id^="dmermaid"]');
+            const toast = document.querySelector('#d2, .error-icon');
             if (toast) (toast as HTMLElement).style.display = 'none';
         });
         observer.observe(document.body, { childList: true, subtree: true });
@@ -104,6 +104,7 @@ export default function OutputSection({ mermaidCode, docText, diagramType, onRes
     }, [mermaidCode]);
 
     // rendering Mermaid
+    // rendering Mermaid
     useEffect(() => {
         if (!typewriterDone || !mermaidCode) return;
 
@@ -115,6 +116,9 @@ export default function OutputSection({ mermaidCode, docText, diagramType, onRes
             }
 
             try {
+                // aspetta font e un piccolo delay per garantire che Mermaid sia pronto
+                await document.fonts.ready;
+                await new Promise(resolve => setTimeout(resolve, 100));
                 const id = `mermaid-${Date.now()}`;
                 const { svg } = await mermaid.render(id, mermaidCode);
                 setDiagramSvg(svg);
