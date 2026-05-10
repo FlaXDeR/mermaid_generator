@@ -161,28 +161,29 @@ Sintassi e regole obbligatorie:
 ${syntaxGuide}
 
 ━━━ CAMPO "doc" ━━━
-Genera documentazione tecnica e precisa in italiano. Evita descrizioni vaghe.
+Genera documentazione tecnica approfondita e precisa in italiano. Evita descrizioni vaghe o generiche.
 Struttura ESATTA:
 
 ## Panoramica
-2-4 frasi tecniche su cosa fa il codice, scopo architetturale e contesto. Cita le classi principali con **grassetto**.
+3-5 frasi tecniche che descrivono: scopo del sistema, architettura generale, responsabilità principali e contesto di utilizzo. Cita le classi principali con **grassetto**. Sii dettagliato e specifico.
 
 ## Classi/Funzioni principali
-Elenco con trattino. Formato: **NomeElemento**: ruolo e responsabilità tecnica precisa.
+Elenco con trattino. Formato: **NomeElemento**: descrizione approfondita del ruolo, delle responsabilità e dei metodi principali che espone.
 
 ## Relazioni e dipendenze
-Elenco con trattino. Dipendenze precise con tipo di relazione (dipende da, estende, implementa, utilizza, gestisce).
+Elenco con trattino. Per ogni dipendenza specifica: il tipo esatto di relazione (dipende da, estende, implementa, utilizza, gestisce, compone, aggrega), e perché questa relazione esiste nel contesto del sistema.
 
 ## Pattern rilevati
-Elenco con trattino. Cerca tra: Repository, Factory, Singleton, Observer, Strategy, Decorator, Facade, Dependency Injection, MVC, Service Layer, DTO, Template Method, Command, Proxy, Builder, Adapter.
-Formato: **NomePattern**: come viene applicato concretamente.
-Scrivi "- Nessun pattern architetturale rilevato." solo se non ne trovi nessuno.
+Elenco con trattino. Analizza attentamente il codice e cerca: Repository, Factory, Singleton, Observer, Strategy, Decorator, Facade, Dependency Injection, MVC, Service Layer, DTO, Template Method, Command, Proxy, Builder, Adapter.
+Formato: **NomePattern**: spiegazione concreta e dettagliata di come il pattern viene applicato, quali classi lo implementano e quale problema risolve.
+Scrivi "- Nessun pattern architetturale rilevato." solo se dopo analisi accurata non ne trovi nessuno.
 
 Regole:
 - Tutto in italiano inclusi i nomi dei pattern
-- Usa ** attorno a classi, metodi e pattern
+- Usa ** attorno a classi, metodi e pattern ogni volta che compaiono
 - Le quattro sezioni sempre presenti nello stesso ordine
-- Sii specifico, evita frasi generiche`;
+- Ogni voce dell'elenco deve essere sostanziosa: almeno una frase completa
+- Sii specifico e tecnico: evita frasi come "gestisce le operazioni" senza specificare quali`;
 
     const response = await client.chat.completions.create({
         model: 'gpt-4o',
@@ -191,7 +192,7 @@ Regole:
             { role: 'user', content: code },
         ],
         temperature: 0.2,
-        max_tokens: 5000,
+        max_tokens: 7500,
     }, { timeout: 30000 });
 
     const raw = response.choices[0]?.message?.content ?? '';
