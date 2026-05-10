@@ -137,10 +137,27 @@ export default function OutputSection({ mermaidCode, docText, diagramType, onRes
             try {
                 await document.fonts.ready;
                 await new Promise(resolve => setTimeout(resolve, 100));
+
+                // gestione errori strutturati dal backend
+                const errorMessages: Record<string, string> = {
+                    ERR_NOT_CODE: 'Il contenuto inserito non è codice sorgente riconoscibile.',
+                    ERR_WRONG_DIAGRAM: 'Il tipo di diagramma selezionato non è adatto al codice fornito.',
+                    ERR_TOO_SIMPLE: 'Il codice è troppo semplice per generare un diagramma significativo.',
+                    ERR_INCOHERENT_FILES: 'I file caricati appartengono a domini diversi e non correlati.',
+                    ERR_INCOMPLETE_CODE: 'Il codice sembra incompleto o frammentato.',
+                };
+
+                const errorMatch = mermaidCode.trim().match(/^\/\/\s*(ERR_[A-Z_]+)/);
+                if (errorMatch) {
+                    const msg = errorMessages[errorMatch[1]] ?? 'Errore nella generazione del diagramma.';
+                    setDiagramError(msg);
+                    setDiagramSvg('');
+                    return;
+                }
+
                 const id = `mermaid-${Date.now()}`;
                 const { svg } = await mermaid.render(id, mermaidCode);
 
-                // calcola zoom automatico in base alle dimensioni del contenitore e del SVG
                 const containerW = diagramAreaRef.current?.clientWidth ?? 600;
                 const containerH = diagramAreaRef.current?.clientHeight ?? 536;
                 const autoZoom = calcAutoZoom(svg, containerW, containerH);

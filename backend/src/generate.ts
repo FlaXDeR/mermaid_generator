@@ -13,6 +13,30 @@ export interface GenerateResult {
     doc: string;
 }
 
+// messaggi di errore fissi per ogni codice di errore
+const ERROR_MESSAGES: Record<string, { mermaid: string; doc: string }> = {
+    ERR_NOT_CODE: {
+        mermaid: `// ERR_NOT_CODE\n// Il contenuto inserito non è codice sorgente.\n// Inserisci codice scritto in un linguaggio di programmazione supportato.`,
+        doc: '## Panoramica\n\nNessun contenuto valido da analizzare.\n\n## Classi/Funzioni principali\n- Nessuna rilevata.\n\n## Relazioni e dipendenze\n- Nessuna rilevata.\n\n## Pattern rilevati\n- Nessun pattern rilevato.',
+    },
+    ERR_WRONG_DIAGRAM: {
+        mermaid: `// ERR_WRONG_DIAGRAM\n// Il tipo di diagramma selezionato non è adatto al codice fornito.\n// Prova a selezionare un tipo diverso o carica codice più adatto.`,
+        doc: '## Panoramica\n\nTipo di diagramma non compatibile con il codice fornito.\n\n## Classi/Funzioni principali\n- Analisi non disponibile.\n\n## Relazioni e dipendenze\n- Analisi non disponibile.\n\n## Pattern rilevati\n- Analisi non disponibile.',
+    },
+    ERR_TOO_SIMPLE: {
+        mermaid: `// ERR_TOO_SIMPLE\n// Il codice è troppo semplice per generare un diagramma significativo.\n// Carica un file più strutturato con più classi o funzioni.`,
+        doc: '## Panoramica\n\nStruttura insufficiente per l\'analisi.\n\n## Classi/Funzioni principali\n- Struttura insufficiente.\n\n## Relazioni e dipendenze\n- Nessuna relazione significativa.\n\n## Pattern rilevati\n- Nessun pattern rilevato.',
+    },
+    ERR_INCOHERENT_FILES: {
+        mermaid: `// ERR_INCOHERENT_FILES\n// I file caricati appartengono a domini o progetti diversi.\n// Carica file che fanno parte dello stesso progetto.`,
+        doc: '## Panoramica\n\nFile non correlati tra loro.\n\n## Classi/Funzioni principali\n- Analisi non disponibile.\n\n## Relazioni e dipendenze\n- Impossibile stabilire relazioni tra file di domini diversi.\n\n## Pattern rilevati\n- Analisi non disponibile.',
+    },
+    ERR_INCOMPLETE_CODE: {
+        mermaid: `// ERR_INCOMPLETE_CODE\n// Il codice sembra incompleto o frammentato.\n// Carica un file sorgente completo con classi e funzioni chiuse.`,
+        doc: '## Panoramica\n\nCodice incompleto o frammentato.\n\n## Classi/Funzioni principali\n- Struttura incompleta.\n\n## Relazioni e dipendenze\n- Non determinabili.\n\n## Pattern rilevati\n- Analisi non disponibile.',
+    },
+};
+
 const DIAGRAM_TYPE_LABELS: Record<string, string> = {
     class:     'Class Diagram',
     sequence:  'Sequence Diagram',
@@ -29,11 +53,11 @@ classDiagram
   }
   ClasseA --> ClasseB
 REGOLE OBBLIGATORIE:
-- Gli attributi vanno scritti come: visibilità Tipo nome (es: -String name, -int age)
-- I metodi vanno scritti come: visibilità TipoRitorno nome(Tipo param) (es: +String getName())
-- NON usare i due punti negli attributi o metodi (NO -name: string, NO +getName(): String)
-- NON aggiungere etichette alle frecce: scrivi solo "ClasseA --> ClasseB"
-- NON usare tipi generici complessi: scrivi solo Map o List senza parametri di tipo`,
+- Attributi: visibilità Tipo nome (es: -String name, -int age)
+- Metodi: visibilità TipoRitorno nome(Tipo param) (es: +String getName())
+- NON usare i due punti negli attributi o metodi
+- NON aggiungere etichette alle frecce: solo "ClasseA --> ClasseB"
+- NON usare tipi generici complessi: scrivi solo Map o List`,
 
     sequence: `Usa la sintassi sequenceDiagram. Esempio:
 sequenceDiagram
@@ -45,10 +69,10 @@ sequenceDiagram
   C-->>B: risultato
   B-->>A: risposta
 REGOLE OBBLIGATORIE:
-- Usa al massimo 6 partecipanti
-- Usa ->> per chiamate dirette e -->> per risposte/return
-- Mostra solo le interazioni principali e significative
-- I messaggi devono riflettere i nomi reali dei metodi del codice`,
+- Massimo 6 partecipanti
+- Usa ->> per chiamate e -->> per risposte/return
+- Mostra solo le interazioni principali
+- I messaggi devono riflettere i nomi reali dei metodi`,
 
     flowchart: `Usa la sintassi flowchart TD. Esempio:
 flowchart TD
@@ -59,11 +83,11 @@ flowchart TD
   D --> E
 REGOLE OBBLIGATORIE:
 - Usa ([...]) per inizio/fine, [...] per operazioni, {...} per decisioni
-- Le etichette dei nodi devono essere brevi e in italiano
+- Etichette brevi in italiano, senza virgolette doppie nei label dei nodi
 - Le frecce condizionali devono avere etichette |Sì| e |No|
-- Il flowchart deve rispecchiare la logica reale del codice`,
+- NON usare virgolette doppie dentro i nodi`,
 
-    component: `Usa la sintassi graph TD con nodi che rappresentano i componenti. Esempio:
+    component: `Usa la sintassi graph TD con nodi componente. Esempio:
 graph TD
   App([App])
   Database([Database])
@@ -71,28 +95,23 @@ graph TD
   App --> Database
   App --> AuthService
 REGOLE OBBLIGATORIE:
-- Usa parentesi tonde ([NomeComponente]) per ogni nodo
+- Usa ([NomeComponente]) per ogni nodo
 - Frecce semplici senza etichette`,
 };
 
-// post-processing: corregge sintassi Mermaid non valida generata dall'LLM
+// post-processing: corregge sintassi Mermaid non valida
 function fixMermaidCode(mermaid: string): string {
     let fixed = mermaid;
 
     if (fixed.trim().startsWith('classDiagram')) {
-        // 1. rimuove etichette dalle frecce — causano crash
+        // rimuove etichette dalle frecce
         fixed = fixed.replace(/-->\s*([A-Za-z_][A-Za-z0-9_]*)\s*:\s*[^\n]+/g, '--> $1');
         fixed = fixed.replace(/<\|--\s*([A-Za-z_][A-Za-z0-9_]*)\s*:\s*[^\n]+/g, '<|-- $1');
-
-        // 2. rimuove tutti i generici — causano SVG minuscolo
+        // rimuove generici
         fixed = fixed.replace(/~[^~]+~/g, '');
-
-        // 3. converte attributi "nome: Tipo" → "Tipo nome" (sintassi standard Mermaid)
-        // es: -id: string → -string id
+        // converte attributi "nome: Tipo" → "Tipo nome"
         fixed = fixed.replace(/([+\-#~])(\w+)\s*:\s*([A-Za-z]\w*)\s*$/gm, '$1$3 $2');
-
-        // 4. rimuove colon prima del tipo di ritorno nei metodi
-        // es: +getName(): String → +String getName()
+        // rimuove colon prima del tipo di ritorno nei metodi
         fixed = fixed.replace(/([+\-#~]\w+)\s*\(([^)]*)\)\s*:\s*(\w+)/g, '$1($2) $3');
     }
 
@@ -117,47 +136,52 @@ Ricevi del codice sorgente e devi restituire SOLO un oggetto JSON valido, senza 
 
 Il JSON deve avere esattamente questi due campi: "mermaid" e "doc".
 
+━━━ ANALISI PRELIMINARE ━━━
+Prima di generare il diagramma, valuta il contenuto ricevuto e restituisci uno di questi codici di errore se necessario:
+
+- ERR_NOT_CODE: il contenuto non è codice sorgente (testo libero, dati, configurazione non rilevante)
+- ERR_WRONG_DIAGRAM: il tipo di diagramma richiesto (${diagramLabel}) non è adatto al codice fornito (es. codice senza classi per un Class Diagram, codice senza interazioni per un Sequence Diagram)
+- ERR_TOO_SIMPLE: il codice ha meno di 2 classi/funzioni significative e non è sufficiente per un diagramma utile
+- ERR_INCOHERENT_FILES: i file multipli ricevuti appartengono a domini completamente diversi e non correlati
+- ERR_INCOMPLETE_CODE: il codice è chiaramente frammentato o incompleto (blocchi aperti non chiusi, imports senza corpo, ecc.)
+
+Se rilevi uno di questi errori, restituisci ESATTAMENTE:
+{ "mermaid": "// CODICE_ERRORE", "doc": "// CODICE_ERRORE" }
+
+Sostituendo CODICE_ERRORE con uno dei valori sopra (es. ERR_NOT_CODE).
+
 ━━━ CAMPO "mermaid" ━━━
-Genera il codice Mermaid per un ${diagramLabel} seguendo queste regole:
-- Non aggiungere backtick, commenti o delimitatori di codice
-- Il diagramma deve riflettere fedelmente la struttura del codice ricevuto
-- Privilegia la chiarezza: ometti dettagli minori se il diagramma diventerebbe troppo denso
-- Il diagramma deve essere tecnicamente corretto e coerente con il codice analizzato
+Se il codice è valido, genera il codice Mermaid per un ${diagramLabel}:
+- Nessun backtick, commento o delimitatore
+- Il diagramma deve riflettere fedelmente la struttura del codice
+- Privilegia la chiarezza: ometti dettagli minori se il diagramma diventa troppo denso
 
 Sintassi e regole obbligatorie:
 ${syntaxGuide}
 
 ━━━ CAMPO "doc" ━━━
-Genera documentazione tecnica e precisa in italiano. Evita descrizioni vaghe o generiche.
-Segui ESATTAMENTE questa struttura con questi titoli nell'ordine indicato:
+Genera documentazione tecnica e precisa in italiano. Evita descrizioni vaghe.
+Struttura ESATTA:
 
 ## Panoramica
-Testo di 2-4 frasi che descrive in modo tecnico cosa fa il codice, il suo scopo architetturale e il contesto di utilizzo. Nessun elenco. Cita i nomi reali delle classi principali con **grassetto**.
+2-4 frasi tecniche su cosa fa il codice, scopo architetturale e contesto. Cita le classi principali con **grassetto**.
 
 ## Classi/Funzioni principali
-Elenco con trattino. Formato: **NomeElemento**: descrizione tecnica precisa del ruolo e delle responsabilità in italiano.
+Elenco con trattino. Formato: **NomeElemento**: ruolo e responsabilità tecnica precisa.
 
 ## Relazioni e dipendenze
-Elenco con trattino. Descrivi con precisione le dipendenze tra classi/funzioni, specificando il tipo di relazione (dipende da, estende, implementa, utilizza, gestisce).
+Elenco con trattino. Dipendenze precise con tipo di relazione (dipende da, estende, implementa, utilizza, gestisce).
 
 ## Pattern rilevati
-Elenco con trattino. Analizza attentamente il codice e identifica i design pattern presenti tra: Repository, Factory, Singleton, Observer, Strategy, Decorator, Facade, Dependency Injection, MVC, Service Layer, DTO, Template Method, Command, Proxy, Builder, Adapter.
-Formato: **NomePattern**: spiegazione concreta di come il pattern viene applicato nel codice analizzato.
-Scrivi "- Nessun pattern architetturale rilevato." SOLO se dopo analisi accurata non ne trovi nessuno.
+Elenco con trattino. Cerca tra: Repository, Factory, Singleton, Observer, Strategy, Decorator, Facade, Dependency Injection, MVC, Service Layer, DTO, Template Method, Command, Proxy, Builder, Adapter.
+Formato: **NomePattern**: come viene applicato concretamente.
+Scrivi "- Nessun pattern architetturale rilevato." solo se non ne trovi nessuno.
 
-Regole generali per "doc":
-- Tutto in italiano, inclusi i nomi dei pattern
-- Usa ** attorno ai nomi di classi, metodi e pattern ogni volta che compaiono nel testo
-- Le quattro sezioni devono essere sempre presenti e nello stesso ordine
-- Nessuna sezione aggiuntiva
-- Sii specifico: evita frasi come "gestisce le operazioni" senza specificare quali
-
-━━━ GESTIONE ERRORI ━━━
-Se il contenuto non è codice sorgente riconoscibile restituisci:
-{
-  "mermaid": "// Codice sorgente non valido o non riconoscibile",
-  "doc": "## Panoramica\nIl contenuto inviato non sembra essere codice sorgente valido.\n\n## Classi/Funzioni principali\n- Nessuna classe o funzione rilevata.\n\n## Relazioni e dipendenze\n- Nessuna relazione rilevata.\n\n## Pattern rilevati\n- Nessun pattern architetturale rilevato."
-}`;
+Regole:
+- Tutto in italiano inclusi i nomi dei pattern
+- Usa ** attorno a classi, metodi e pattern
+- Le quattro sezioni sempre presenti nello stesso ordine
+- Sii specifico, evita frasi generiche`;
 
     const response = await client.chat.completions.create({
         model: 'gpt-4o',
@@ -166,7 +190,7 @@ Se il contenuto non è codice sorgente riconoscibile restituisci:
             { role: 'user', content: code },
         ],
         temperature: 0.2,
-        max_tokens: 4000,
+        max_tokens: 5000,
     });
 
     const raw = response.choices[0]?.message?.content ?? '';
@@ -178,7 +202,18 @@ Se il contenuto non è codice sorgente riconoscibile restituisci:
         .trim();
 
     const parsed = JSON.parse(cleaned) as GenerateResult;
-    parsed.mermaid = fixMermaidCode(parsed.mermaid);
 
+    // controlla se l'LLM ha restituito un codice di errore
+    const errorMatch = parsed.mermaid.match(/^\/\/\s*(ERR_[A-Z_]+)/);
+    if (errorMatch) {
+        const errorCode = errorMatch[1];
+        const errorContent = ERROR_MESSAGES[errorCode];
+        if (errorContent) {
+            return errorContent;
+        }
+    }
+
+    // output normale: applica fix Mermaid
+    parsed.mermaid = fixMermaidCode(parsed.mermaid);
     return parsed;
 }
