@@ -39,20 +39,29 @@ REGOLE OBBLIGATORIE:
 sequenceDiagram
   participant A
   participant B
-  A->>B: messaggio()
+  participant C
+  A->>B: chiamata(parametro)
+  B->>C: operazione()
+  C-->>B: risultato
   B-->>A: risposta
 REGOLE OBBLIGATORIE:
 - Usa al massimo 6 partecipanti
-- Mostra solo le interazioni principali`,
+- Usa ->> per chiamate dirette e -->> per risposte/return
+- Mostra solo le interazioni principali e significative
+- I messaggi devono riflettere i nomi reali dei metodi del codice`,
 
     flowchart: `Usa la sintassi flowchart TD. Esempio:
 flowchart TD
-  A[Inizio] --> B{Condizione}
-  B -->|Sì| C[Azione]
-  B -->|No| D[Fine]
+  A([Inizio]) --> B{Condizione valida?}
+  B -->|Sì| C[Esegui operazione]
+  B -->|No| D[Gestisci errore]
+  C --> E([Fine])
+  D --> E
 REGOLE OBBLIGATORIE:
-- Etichette brevi e chiare in italiano
-- Usa forme standard: [] per nodi, {} per decisioni, () per terminatori`,
+- Usa ([...]) per inizio/fine, [...] per operazioni, {...} per decisioni
+- Le etichette dei nodi devono essere brevi e in italiano
+- Le frecce condizionali devono avere etichette |Sì| e |No|
+- Il flowchart deve rispecchiare la logica reale del codice`,
 
     component: `Usa la sintassi graph TD con nodi che rappresentano i componenti. Esempio:
 graph TD
@@ -87,6 +96,11 @@ function fixMermaidCode(mermaid: string): string {
         fixed = fixed.replace(/([+\-#~]\w+)\s*\(([^)]*)\)\s*:\s*(\w+)/g, '$1($2) $3');
     }
 
+    // fix flowchart: virgolette doppie nei label rompono il parser Mermaid
+    if (fixed.trim().startsWith('flowchart') || fixed.trim().startsWith('graph')) {
+        fixed = fixed.replace(/"/g, "'");
+    }
+
     return fixed;
 }
 
@@ -108,32 +122,35 @@ Genera il codice Mermaid per un ${diagramLabel} seguendo queste regole:
 - Non aggiungere backtick, commenti o delimitatori di codice
 - Il diagramma deve riflettere fedelmente la struttura del codice ricevuto
 - Privilegia la chiarezza: ometti dettagli minori se il diagramma diventerebbe troppo denso
+- Il diagramma deve essere tecnicamente corretto e coerente con il codice analizzato
 
 Sintassi e regole obbligatorie:
 ${syntaxGuide}
 
 ━━━ CAMPO "doc" ━━━
-Genera la documentazione in italiano seguendo ESATTAMENTE questa struttura, con questi titoli nell'ordine indicato:
+Genera documentazione tecnica e precisa in italiano. Evita descrizioni vaghe o generiche.
+Segui ESATTAMENTE questa struttura con questi titoli nell'ordine indicato:
 
 ## Panoramica
-Testo libero di 2-3 frasi che descrive cosa fa il codice. Nessun elenco.
+Testo di 2-4 frasi che descrive in modo tecnico cosa fa il codice, il suo scopo architetturale e il contesto di utilizzo. Nessun elenco. Cita i nomi reali delle classi principali con **grassetto**.
 
 ## Classi/Funzioni principali
-Elenco con trattino. Formato: **NomeElemento**: descrizione breve in italiano.
+Elenco con trattino. Formato: **NomeElemento**: descrizione tecnica precisa del ruolo e delle responsabilità in italiano.
 
 ## Relazioni e dipendenze
-Elenco con trattino. Descrivi le dipendenze tra classi/funzioni in italiano.
+Elenco con trattino. Descrivi con precisione le dipendenze tra classi/funzioni, specificando il tipo di relazione (dipende da, estende, implementa, utilizza, gestisce).
 
 ## Pattern rilevati
-Elenco con trattino. Analizza il codice e cerca i seguenti pattern: Repository, Factory, Singleton, Observer, Strategy, Decorator, Facade, Dependency Injection, MVC, Service Layer, DTO, Template Method, Command, Proxy.
-Formato: **NomePattern**: come viene applicato nel codice.
-Scrivi "- Nessun pattern architetturale rilevato." SOLO se davvero non ce ne sono.
+Elenco con trattino. Analizza attentamente il codice e identifica i design pattern presenti tra: Repository, Factory, Singleton, Observer, Strategy, Decorator, Facade, Dependency Injection, MVC, Service Layer, DTO, Template Method, Command, Proxy, Builder, Adapter.
+Formato: **NomePattern**: spiegazione concreta di come il pattern viene applicato nel codice analizzato.
+Scrivi "- Nessun pattern architetturale rilevato." SOLO se dopo analisi accurata non ne trovi nessuno.
 
 Regole generali per "doc":
 - Tutto in italiano, inclusi i nomi dei pattern
-- Usa ** solo attorno ai nomi di classi, metodi e pattern
+- Usa ** attorno ai nomi di classi, metodi e pattern ogni volta che compaiono nel testo
 - Le quattro sezioni devono essere sempre presenti e nello stesso ordine
 - Nessuna sezione aggiuntiva
+- Sii specifico: evita frasi come "gestisce le operazioni" senza specificare quali
 
 ━━━ GESTIONE ERRORI ━━━
 Se il contenuto non è codice sorgente riconoscibile restituisci:
